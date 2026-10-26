@@ -45,11 +45,11 @@ const en = {
     crown: 'Move here and crown this piece',
     base: 'Goes back to base',
     rescue: 'Capture and rescue your piece',
-    truce: 'Capture the rescuer: truce, every piece back to base',
+    truce: 'Capture the rescuer: truce, the exchange returns to base',
   },
   event: {
     rescue: 'Rescue! The captured piece returns to base',
-    truce: 'Truce! Every piece returns to base',
+    truce: 'Truce! The pieces of the exchange return to base',
   },
   wins: (name: string) => `${name} wins!`,
   result: {
@@ -180,7 +180,7 @@ const en = {
       rescueTitle: 'Rescue',
       rescue: 'If you capture the enemy piece that captured one of yours on their last turn, you rescue your piece: it goes back to your base, the enemy loses the point for it, and you gain a point for your capture.',
       truceTitle: 'Truce',
-      truce: 'If the piece that made the rescue is captured on the very next turn, there is a truce: every piece of both players goes back to base and both scores return to 0.',
+      truce: 'If the piece that made the rescue is captured on the very next turn, there is a truce: every piece involved in the exchange goes back to its base, the others stay where they are, and both scores return to what they were before the exchange.',
     },
   },
 };
@@ -223,11 +223,11 @@ const es: Strings = {
     crown: 'Mover aquí y coronar la pieza',
     base: 'Vuelve a la base',
     rescue: 'Capturar y rescatar tu pieza',
-    truce: 'Capturar al rescatador: tregua, todas las piezas vuelven a la base',
+    truce: 'Capturar al rescatador: tregua, el intercambio vuelve a la base',
   },
   event: {
     rescue: '¡Rescate! La pieza capturada vuelve a la base',
-    truce: '¡Tregua! Todas las piezas vuelven a la base',
+    truce: '¡Tregua! Las piezas del intercambio vuelven a la base',
   },
   wins: (name: string) => `¡Gana ${name}!`,
   result: {
@@ -358,7 +358,7 @@ const es: Strings = {
       rescueTitle: 'Rescate',
       rescue: 'Si capturas la pieza enemiga que capturó una de las tuyas en su último turno, rescatas tu pieza: vuelve a tu base, el enemigo pierde el punto por ella y tú ganas un punto por tu captura.',
       truceTitle: 'Tregua',
-      truce: 'Si la pieza que hizo el rescate es capturada justo en el turno siguiente, hay tregua: todas las piezas de ambos jugadores vuelven a la base y los dos marcadores vuelven a 0.',
+      truce: 'Si la pieza que hizo el rescate es capturada justo en el turno siguiente, hay tregua: todas las piezas que participaron en el intercambio vuelven a su base, las demás se quedan donde están y los marcadores vuelven a como estaban antes del intercambio.',
     },
   },
 };

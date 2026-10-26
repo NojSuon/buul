@@ -22,11 +22,14 @@ export interface Move {
   label: string;
 }
 
-// The capture made by the previous move, if it was one. Noj Ba'atel uses it for rescues and truces.
+// The capture made by the previous move, if it was one. Noj Ba'atel uses it for rescues and truces:
+// `exchange` lists every piece involved so far, and `scoreBefore` the scores before it started.
 export interface LastCapture {
   by: string;
   victim: string;
   rescue: boolean;
+  exchange: string[];
+  scoreBefore: Record<Player, number>;
 }
 
 export interface GameState {
@@ -179,22 +182,42 @@ export function movePiece(state: GameState, pieceId: string): GameState {
       } else {
         // In capture mode it is out of the game...
         out = [...out, enemy];
-        lastCapture = { by: piece.id, victim: enemy.id, rescue: preview.effect === 'rescue' };
+        const previous = state.lastCapture;
         if (preview.effect === 'rescue') {
           // ...unless it rescues the piece the enemy just took: that piece returns to base and
           // the enemy loses the point for it.
-          const rescued = out.find((p) => p.id === state.lastCapture!.victim)!;
+          const rescued = out.find((p) => p.id === previous!.victim)!;
           out = out.filter((p) => p !== rescued);
           pieces.push({ ...rescued, col: homeCol(rescued.player) });
           captured[enemy.player]--;
+          lastCapture = {
+            by: piece.id,
+            victim: enemy.id,
+            rescue: true,
+            exchange: [...previous!.exchange, piece.id],
+            scoreBefore: previous!.scoreBefore,
+          };
           to += '↺';
         } else if (preview.effect === 'truce') {
-          // Capturing the rescuer straight back is a truce: every piece returns to base.
-          pieces = startingPieces();
-          out = [];
-          captured = { A: 0, B: 0 };
-          lastCapture = null;
+          // Capturing the rescuer straight back is a truce: every piece involved in the exchange
+          // returns to base, and the exchange's points are cancelled.
+          const involved = new Set([...previous!.exchange, piece.id, enemy.id]);
+          const returning = [...pieces, ...out].filter((p) => involved.has(p.id));
+          pieces = [
+            ...pieces.filter((p) => !involved.has(p.id)),
+            ...returning.map((p) => ({ ...p, col: homeCol(p.player) })),
+          ];
+          out = out.filter((p) => !involved.has(p.id));
+          captured = { ...previous!.scoreBefore };
           to += '⟲';
+        } else {
+          lastCapture = {
+            by: piece.id,
+            victim: enemy.id,
+            rescue: false,
+            exchange: [piece.id, enemy.id],
+            scoreBefore: state.captured,
+          };
         }
       }
     }
