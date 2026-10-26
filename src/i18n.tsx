@@ -103,6 +103,8 @@ const en = {
     deleteConfirm: 'This permanently deletes your nickname, your statistics and your account. Google will ask you to confirm it’s you.',
     deleteYes: 'Yes, delete everything',
     cancel: 'Cancel',
+    profileFailed: 'You’re signed in, but your profile couldn’t be loaded.',
+    retry: 'Try again',
     errors: {
       'unauthorized-domain': 'Sign-in isn’t enabled for this website address yet.',
       'popup-blocked': 'Your browser blocked the sign-in window. Allow pop-ups for this site and try again.',
@@ -358,6 +360,8 @@ const es: Strings = {
     deleteConfirm: 'Esto elimina para siempre tu apodo, tus estadísticas y tu cuenta. Google te pedirá que confirmes que eres tú.',
     deleteYes: 'Sí, eliminar todo',
     cancel: 'Cancelar',
+    profileFailed: 'Iniciaste sesión, pero no se pudo cargar tu perfil.',
+    retry: 'Reintentar',
     errors: {
       'unauthorized-domain': 'El inicio de sesión aún no está activado para esta dirección web.',
       'popup-blocked': 'Tu navegador bloqueó la ventana de inicio de sesión. Permite las ventanas emergentes para este sitio e inténtalo de nuevo.',

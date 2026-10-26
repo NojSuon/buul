@@ -13,8 +13,11 @@ interface Account {
   status: AccountStatus;
   profile: Profile | null;
   error: AccountError | null;
+  // The raw Firebase error code, shown in small print to help troubleshooting.
+  errorCode: string | null;
   busy: boolean;
   signIn: () => Promise<void>;
+  reloadProfile: () => Promise<void>;
   signOut: () => Promise<void>;
   rename: (nickname: string) => Promise<void>;
   deleteAccount: () => Promise<void>;
@@ -38,7 +41,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const [uid, setUid] = useState<string | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<AccountError | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+
+  const fail = (e: unknown) => {
+    console.error('Account error', e);
+    setError(toAccountError(e));
+    setErrorCode((e as { code?: string })?.code ?? String(e));
+  };
 
   // Load Firebase in the background once the game is on screen, then follow the sign-in state.
   useEffect(() => {
@@ -56,11 +66,10 @@ export function AccountProvider({ children }: { children: ReactNode }) {
         }
         try {
           setProfile(await s.loadProfile(nextUid));
-          setStatus('signedIn');
         } catch (e) {
-          setError(toAccountError(e));
-          setStatus('signedIn');
+          fail(e);
         }
+        setStatus('signedIn');
       });
     });
     return () => {
@@ -73,10 +82,11 @@ export function AccountProvider({ children }: { children: ReactNode }) {
   const run = useCallback(async (action: (s: Service) => Promise<void>) => {
     setBusy(true);
     setError(null);
+    setErrorCode(null);
     try {
       await action(await service.current!);
     } catch (e) {
-      setError(toAccountError(e));
+      if (toAccountError(e)) fail(e);
     } finally {
       setBusy(false);
     }
@@ -86,8 +96,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     status,
     profile,
     error,
+    errorCode,
     busy,
     signIn: () => run((s) => s.signInWithGoogle()),
+    reloadProfile: () =>
+      run(async (s) => {
+        setProfile(await s.loadProfile(uid!));
+      }),
     signOut: () => run((s) => s.signOutUser()),
     rename: (nickname) =>
       run(async (s) => {

@@ -111,7 +111,26 @@ export default function AccountModal({ onClose, onOpenPrivacy }: { onClose: () =
           </>
         )}
 
-        {account.error && <p className="account-error">{t.errors[account.error]}</p>}
+        {account.status === 'signedIn' && !account.profile && (
+          <>
+            <p>{t.profileFailed}</p>
+            <div className="account-row">
+              <button className="pill-button" onClick={account.reloadProfile} disabled={account.busy}>
+                {t.retry}
+              </button>
+              <button className="pill-button" onClick={account.signOut} disabled={account.busy}>
+                {t.signOut}
+              </button>
+            </div>
+          </>
+        )}
+
+        {account.error && (
+          <p className="account-error">
+            {t.errors[account.error]}
+            {account.errorCode && <span className="account-error-code">({account.errorCode})</span>}
+          </p>
+        )}
 
         <button className="link-button" onClick={onOpenPrivacy}>
           {t.privacyLink}

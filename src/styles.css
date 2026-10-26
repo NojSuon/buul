@@ -1016,6 +1016,15 @@ button:focus-visible {
   font-weight: 600;
 }
 
+.account-error-code {
+  display: block;
+  margin-top: 2px;
+  color: var(--navy);
+  font-size: 12px;
+  font-weight: 400;
+  opacity: 0.7;
+}
+
 .link-button {
   align-self: flex-start;
   padding: 0;
