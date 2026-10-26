@@ -9,6 +9,7 @@ interface Props {
   bot: Bot | null;
   onRoll: () => void;
   onMove: (pieceId: string) => void;
+  onPlayAgain: () => void;
 }
 
 const COLOR: Record<Player, string> = { A: 'teal', B: 'orange' };
@@ -139,8 +140,8 @@ function Board({ game, bot, selectedId, onSelect, onMove }: BoardProps) {
                   <button
                     className={`target-marker target-${COLOR[selected.player]} target-${preview.kind}`}
                     onClick={() => onMove(selected.id)}
-                    title={t.target[preview.kind]}
-                    aria-label={t.target[preview.kind]}
+                    title={t.target[preview.effect ?? preview.kind]}
+                    aria-label={t.target[preview.effect ?? preview.kind]}
                   >
                     {TARGET_ICON[preview.kind]}
                   </button>
@@ -154,11 +155,71 @@ function Board({ game, bot, selectedId, onSelect, onMove }: BoardProps) {
   );
 }
 
-export default function GameArea({ game, bot, onRoll, onMove }: Props) {
+function VictoryBanner({ game, bot, onPlayAgain, onDismiss }: { game: GameState; bot: Bot | null; onPlayAgain: () => void; onDismiss: () => void }) {
+  const t = useStrings();
+  const winner = game.winner;
+  if (!winner) return null;
+
+  let title: string;
+  let subtitle = winner === 'draw' ? '' : t.result[game.mode];
+  if (winner === 'draw') title = t.status.draw;
+  else if (!bot) title = t.wins(t.player(winner));
+  else if (winner === 'A') title = t.status.victory;
+  else {
+    title = t.status.defeated;
+    subtitle = t.wins(bot.name);
+  }
+  const color = winner === 'draw' ? 'navy' : COLOR[winner];
+
+  return (
+    <div className="victory-overlay" role="alertdialog" aria-labelledby="victory-title">
+      <div className={`victory-card victory-${color}`}>
+        <span className="victory-icon" aria-hidden="true">{game.mode === 'race' ? '♛' : '⚔'}</span>
+        <h2 id="victory-title" className="victory-title">{title}</h2>
+        {subtitle && <p className="victory-subtitle">{subtitle}</p>}
+        <div className="victory-actions">
+          <button className="pill-button victory-primary" onClick={onPlayAgain}>
+            {t.playAgain}
+          </button>
+          <button className="pill-button" onClick={onDismiss}>
+            {t.viewBoard}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Briefly announces a rescue or a truce after the move that caused it.
+function EventBanner({ game }: { game: GameState }) {
+  const t = useStrings();
+  const [shown, setShown] = useState<{ kind: 'rescue' | 'truce'; key: number } | null>(null);
+
+  useEffect(() => {
+    if (game.event) setShown({ kind: game.event, key: game.moves.length });
+  }, [game.event, game.moves.length]);
+
+  useEffect(() => {
+    if (!shown) return;
+    const timer = setTimeout(() => setShown(null), 2800);
+    return () => clearTimeout(timer);
+  }, [shown]);
+
+  if (!shown) return null;
+  return (
+    <div key={shown.key} className={`event-banner event-${shown.kind}`} role="status">
+      {t.event[shown.kind]}
+    </div>
+  );
+}
+
+export default function GameArea({ game, bot, onRoll, onMove, onPlayAgain }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [victoryDismissed, setVictoryDismissed] = useState(false);
 
   // A selection only lasts for the roll it was made with.
   useEffect(() => setSelectedId(null), [game.turn, game.roll, game.moves.length]);
+  useEffect(() => setVictoryDismissed(false), [game.winner]);
 
   const move = (pieceId: string) => {
     setSelectedId(null);
@@ -176,6 +237,10 @@ export default function GameArea({ game, bot, onRoll, onMove }: Props) {
         <RollControl game={game} player="A" bot={bot} onRoll={onRoll} />
         <Board game={game} bot={bot} selectedId={selectedId} onSelect={setSelectedId} onMove={move} />
         <RollControl game={game} player="B" bot={bot} onRoll={onRoll} />
+        <EventBanner game={game} />
+        {!victoryDismissed && (
+          <VictoryBanner game={game} bot={bot} onPlayAgain={onPlayAgain} onDismiss={() => setVictoryDismissed(true)} />
+        )}
       </div>
 
       <div className="game-row game-row-bottom">

@@ -160,6 +160,10 @@ function CaptureTab() {
           moves={[{ row: 1, from: 8, to: 10, style: 'dashed' }]}
         />
       </Figure>
+      <h3>{t.rescueTitle}</h3>
+      <p>{t.rescue}</p>
+      <h3>{t.truceTitle}</h3>
+      <p>{t.truce}</p>
     </>
   );
 }

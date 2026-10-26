@@ -97,8 +97,14 @@ export function chooseMove(state: GameState, personality: Personality): string |
   let best: string | undefined;
   let bestScore = -Infinity;
 
+  const enemy = other(me);
+
   for (const piece of legalMoves(state)) {
     const next = movePiece(state, piece.id);
+    // Net change in the capture score: a rescue also takes a point from the enemy, and a truce
+    // wipes both scores.
+    const captureGain =
+      next.captured[me] - state.captured[me] - (next.captured[enemy] - state.captured[enemy]);
     const moved = next.pieces.find((p) => p.id === piece.id);
     const progress = moved ? travelled(moved) - travelled(piece) : COLUMNS.length - 1 - travelled(piece);
     const teamRisk = next.pieces
@@ -107,7 +113,7 @@ export function chooseMove(state: GameState, personality: Personality): string |
 
     const score =
       (next.winner === me ? 1000 : 0) +
-      w.capture * (next.captured[me] - state.captured[me]) +
+      w.capture * captureGain +
       w.crown * (next.crowned[me] - state.crowned[me]) +
       w.progress * progress +
       w.threat * (moved ? threat(next, moved) : 0) -

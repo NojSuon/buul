@@ -169,6 +169,7 @@ export default function App() {
           bot={opponent === 'bot' ? bot : null}
           onRoll={() => dispatch({ type: 'roll', dice: throwDice() })}
           onMove={(pieceId) => dispatch({ type: 'move', pieceId })}
+          onPlayAgain={() => startGame(opponent, game.mode)}
         />
         <MoveHistory gameId={gameId} moves={game.moves} />
         {modal === 'learn' && <LearnModal onClose={closeModal} />}

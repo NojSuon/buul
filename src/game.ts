@@ -22,33 +22,52 @@ export interface Move {
   label: string;
 }
 
+// The capture made by the previous move, if it was one. Noj Ba'atel uses it for rescues and truces.
+export interface LastCapture {
+  by: string;
+  victim: string;
+  rescue: boolean;
+}
+
 export interface GameState {
   mode: Mode;
   pieces: Piece[];
+  // Pieces captured in Noj Ba'atel, kept so a rescue or truce can bring them back.
+  out: Piece[];
   crowned: Record<Player, number>;
   captured: Record<Player, number>;
   dice: Record<Player, boolean[] | null>;
   roll: number | null;
   turn: Player;
   moves: Move[];
+  lastCapture: LastCapture | null;
+  // A special outcome of the last move, for the board to announce.
+  event: 'rescue' | 'truce' | null;
   winner: Player | 'draw' | null;
 }
 
-export function newGame(mode: Mode): GameState {
+function startingPieces(): Piece[] {
   const pieces: Piece[] = [];
   for (let row = 0; row < ROWS; row++) {
     pieces.push({ id: `A${row}`, player: 'A', row, col: 0 });
     pieces.push({ id: `B${row}`, player: 'B', row, col: COLUMNS.length - 1 });
   }
+  return pieces;
+}
+
+export function newGame(mode: Mode): GameState {
   return {
     mode,
-    pieces,
+    pieces: startingPieces(),
+    out: [],
     crowned: { A: 0, B: 0 },
     captured: { A: 0, B: 0 },
     dice: { A: null, B: null },
     roll: null,
     turn: 'A',
     moves: [],
+    lastCapture: null,
+    event: null,
     winner: null,
   };
 }
@@ -91,15 +110,22 @@ export function applyRoll(state: GameState, dice: boolean[]): GameState {
   const roll = diceValue(dice);
   const next = { ...state, dice: { ...state.dice, [state.turn]: dice }, roll };
   if (legalMoves(next).length > 0) return next;
-  return endTurn({ ...next, moves: [...next.moves, { player: state.turn, label: `${roll}-pass` }] });
+  return endTurn({
+    ...next,
+    lastCapture: null,
+    event: null,
+    moves: [...next.moves, { player: state.turn, label: `${roll}-pass` }],
+  });
 }
 
 // Where a piece would end up with the current roll. `col` is the column it lands on (the last column
 // when it is crowned, its own home column when it goes back to base).
+// A capture in Noj Ba'atel can also rescue a piece or trigger a truce (see movePiece).
 export interface MovePreview {
   kind: 'move' | 'capture' | 'crown' | 'base';
   col: number;
   capturedId?: string;
+  effect?: 'rescue' | 'truce';
 }
 
 export function previewMove(state: GameState, pieceId: string): MovePreview | null {
@@ -116,7 +142,13 @@ export function previewMove(state: GameState, pieceId: string): MovePreview | nu
   // Moving into a column held by an enemy captures it, whatever its row. Nobody ever lands
   // in the enemy's home column, so pieces waiting at home are safe.
   const enemy = state.pieces.find((p) => p.player !== piece.player && p.col === col);
-  return enemy ? { kind: 'capture', col, capturedId: enemy.id } : { kind: 'move', col };
+  if (!enemy) return { kind: 'move', col };
+
+  // In Noj Ba'atel, capturing the piece that made the previous move's capture is special: if
+  // that capture was itself a rescue, it's a truce; otherwise it rescues the piece it took.
+  const last = state.lastCapture;
+  const effect = state.mode === 'capture' && last?.by === enemy.id ? (last.rescue ? 'truce' : 'rescue') : undefined;
+  return { kind: 'capture', col, capturedId: enemy.id, effect };
 }
 
 export function movePiece(state: GameState, pieceId: string): GameState {
@@ -125,23 +157,47 @@ export function movePiece(state: GameState, pieceId: string): GameState {
 
   const piece = state.pieces.find((p) => p.id === pieceId)!;
   const crowned = { ...state.crowned };
-  const captured = { ...state.captured };
+  let captured = { ...state.captured };
   let pieces = state.pieces.filter((p) => p.id !== piece.id);
+  let out = state.out;
+  let lastCapture: LastCapture | null = null;
   let to = COLUMNS[preview.col];
 
   if (preview.kind === 'crown') {
     crowned[piece.player]++;
     to = '♛';
   } else {
+    pieces.push({ ...piece, col: preview.col });
     if (preview.kind === 'capture') {
       const enemy = pieces.find((p) => p.id === preview.capturedId)!;
       pieces = pieces.filter((p) => p !== enemy);
       captured[piece.player]++;
-      // In the race the captured piece starts over; in capture mode it is out of the game.
-      if (state.mode === 'race') pieces.push({ ...enemy, col: homeCol(enemy.player) });
       to += '×';
+      if (state.mode === 'race') {
+        // In the race the captured piece starts over.
+        pieces.push({ ...enemy, col: homeCol(enemy.player) });
+      } else {
+        // In capture mode it is out of the game...
+        out = [...out, enemy];
+        lastCapture = { by: piece.id, victim: enemy.id, rescue: preview.effect === 'rescue' };
+        if (preview.effect === 'rescue') {
+          // ...unless it rescues the piece the enemy just took: that piece returns to base and
+          // the enemy loses the point for it.
+          const rescued = out.find((p) => p.id === state.lastCapture!.victim)!;
+          out = out.filter((p) => p !== rescued);
+          pieces.push({ ...rescued, col: homeCol(rescued.player) });
+          captured[enemy.player]--;
+          to += '↺';
+        } else if (preview.effect === 'truce') {
+          // Capturing the rescuer straight back is a truce: every piece returns to base.
+          pieces = startingPieces();
+          out = [];
+          captured = { A: 0, B: 0 };
+          lastCapture = null;
+          to += '⟲';
+        }
+      }
     }
-    pieces.push({ ...piece, col: preview.col });
   }
 
   const roll = state.roll!;
@@ -149,8 +205,11 @@ export function movePiece(state: GameState, pieceId: string): GameState {
   return endTurn({
     ...state,
     pieces,
+    out,
     crowned,
     captured,
+    lastCapture,
+    event: preview.effect ?? null,
     winner: findWinner(state.mode, crowned, captured),
     moves: [...state.moves, { player: piece.player, label: `${roll}-${COLUMNS[piece.col]},${to}` }],
   });
