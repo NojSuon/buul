@@ -46,6 +46,8 @@ p {
   left: 50%;
   display: grid;
   grid-template-columns: 268px minmax(0, 1fr) 268px;
+  /* One row exactly as tall as the stage, so a long move list can't stretch the layout. */
+  grid-template-rows: minmax(0, 1fr);
   transform-origin: center;
 }
 
@@ -113,6 +115,7 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-height: 0;
   padding: 24px 8px 14px;
   background: var(--navy);
   color: var(--paper);
@@ -230,6 +233,8 @@ button:focus-visible {
   list-style: none;
   border: 1.5px solid var(--paper);
   border-radius: var(--radius);
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper) transparent;
 }
 
 .history-item {
@@ -1029,4 +1034,308 @@ button:focus-visible {
   width: auto;
   background: var(--navy);
   color: var(--paper);
+}
+
+/* ---------- Phone layout ---------- */
+
+/* A vertical page that scrolls: top bar, opponent, board, you, then the move list. */
+.app.app-mobile {
+  position: static;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
+  background: var(--white);
+  transform: none;
+}
+
+.mobile-bar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: var(--navy);
+  color: var(--paper);
+}
+
+.mobile-brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.mobile-title {
+  font-size: 30px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.mobile-subtitle {
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.menu-button {
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--paper);
+  color: var(--navy);
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  background: rgba(46, 63, 88, 0.55);
+}
+
+.drawer {
+  height: 100%;
+  width: min(300px, 85%);
+  overflow-y: auto;
+  animation: drawer-in 0.2s ease-out;
+}
+
+.drawer .sidebar-left {
+  min-height: 100%;
+}
+
+@keyframes drawer-in {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+.app-mobile .game-area {
+  flex-shrink: 0;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 14px 16px 18px;
+}
+
+/* Opponent (B) on top, the board in the middle, you (A) at the bottom near your thumbs. */
+.app-mobile .game-row-bottom {
+  order: 1;
+}
+
+.app-mobile .game-row-board {
+  order: 2;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.app-mobile .game-row-top {
+  order: 3;
+}
+
+.app-mobile .game-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.app-mobile .player-header,
+.app-mobile .player-header-b {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.app-mobile .player-header-b .player-title {
+  flex-direction: row;
+}
+
+.app-mobile .player-title h2 {
+  font-size: 24px;
+}
+
+.app-mobile .swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+.app-mobile .crowned,
+.app-mobile .crowned-a,
+.app-mobile .crowned-b {
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+}
+
+.app-mobile .crowned-label {
+  flex-shrink: 0;
+  font-size: 11px;
+}
+
+.app-mobile .crowned-bar {
+  height: 30px;
+  font-size: 18px;
+}
+
+.app-mobile .captured-token {
+  width: 18px;
+  height: 18px;
+}
+
+.app-mobile .roll {
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 0;
+}
+
+.app-mobile .roll-b {
+  order: 1;
+}
+
+.app-mobile .board {
+  order: 2;
+  width: 100%;
+  max-width: none;
+  height: auto;
+  aspect-ratio: 11 / 7;
+}
+
+.app-mobile .roll-a {
+  order: 3;
+}
+
+.app-mobile .dice {
+  flex-direction: row;
+}
+
+.app-mobile .roll-button {
+  padding: 8px 22px;
+  font-size: 18px;
+}
+
+.app-mobile .column {
+  padding: 16px 0 6px;
+  border-radius: 6px;
+}
+
+.app-mobile .column-label {
+  top: 3px;
+  left: 3px;
+}
+
+.app-mobile .row-label {
+  left: 2px;
+}
+
+.app-mobile .piece,
+.app-mobile .target-marker {
+  width: 82%;
+}
+
+/* A bigger invisible tap area than the piece itself, for fingers. */
+.app-mobile .piece::after,
+.app-mobile .target-marker::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+}
+
+.app-mobile .piece {
+  position: relative;
+}
+
+.app-mobile .target-marker {
+  border-width: 2px;
+  font-size: 13px;
+}
+
+.app-mobile .piece-movable,
+.app-mobile .piece-selected {
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--navy);
+}
+
+.app-mobile .piece-selected {
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--orange);
+}
+
+.app-mobile .victory-overlay {
+  inset: -8px -16px;
+}
+
+.app-mobile .victory-card {
+  min-width: 0;
+  width: 92%;
+  padding: 18px 16px 20px;
+}
+
+.app-mobile .victory-title {
+  font-size: 48px;
+}
+
+.app-mobile .victory-subtitle {
+  font-size: 15px;
+}
+
+.app-mobile .event-banner {
+  top: 40px;
+  max-width: 94%;
+  font-size: 14px;
+  white-space: normal;
+  text-align: center;
+}
+
+/* The move list sits under the game as a short scrolling box. */
+.app-mobile .sidebar-right {
+  flex-shrink: 0;
+  padding: 16px;
+}
+
+.app-mobile .history {
+  flex: none;
+  height: 180px;
+}
+
+/* Popups fill the phone screen width. */
+.app-mobile .modal-backdrop {
+  padding: 8px;
+}
+
+.app-mobile .modal {
+  width: 100%;
+  padding: 18px 16px;
+  max-height: 92%;
+}
+
+.app-mobile .modal h2 {
+  font-size: 22px;
+}
+
+.app-mobile .tabs {
+  flex-wrap: wrap;
+}
+
+.app-mobile .tab {
+  flex: 1 1 40%;
+  font-size: 12px;
+}
+
+.app-mobile .learn-body {
+  height: auto;
+  max-height: 58vh;
+}
+
+.app-mobile .mini-board {
+  zoom: 0.72;
+}
+
+.app-mobile .bot-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.app-mobile .about-logo {
+  width: 90px;
+  height: 90px;
 }

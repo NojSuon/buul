@@ -11,6 +11,7 @@ export const LANGUAGES: { id: Lang; label: string }[] = [
 
 const en = {
   subtitle: 'The Mayan board game',
+  menu: 'Menu',
   nav: {
     playOnline: 'Play online',
     playBots: 'Play with bots',
@@ -188,6 +189,7 @@ export type Strings = typeof en;
 
 const es: Strings = {
   subtitle: 'El juego de mesa maya',
+  menu: 'Menú',
   nav: {
     playOnline: 'Jugar en línea',
     playBots: 'Jugar con bots',

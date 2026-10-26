@@ -72,7 +72,7 @@ function RollControl({ game, player, bot, onRoll }: { game: GameState; player: P
   const enabled = game.turn === player && game.roll === null && !game.winner && !isBotPlayer(bot, player);
   const dice = game.dice[player] ?? [false, false, false, false];
   return (
-    <div className="roll">
+    <div className={`roll roll-${player.toLowerCase()}`}>
       <button
         className={`roll-button bg-${COLOR[player]}${enabled ? ' roll-button-ready' : ''}`}
         disabled={!enabled}

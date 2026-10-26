@@ -11,6 +11,7 @@ import {
 import { BOTS, chooseMove, randomBot, type Bot } from './bots';
 import { LanguageProvider, type Lang } from './i18n';
 import LeftSidebar from './components/LeftSidebar';
+import MobileBar from './components/MobileBar';
 import GameArea from './components/GameArea';
 import MoveHistory from './components/MoveHistory';
 import InfoModal from './components/InfoModal';
@@ -48,16 +49,22 @@ const BOT_DELAY_MS = 700;
 const STAGE_WIDTH = 1400;
 const STAGE_HEIGHT = 760;
 
-function useFitScale() {
-  const fit = () => Math.min(window.innerWidth / STAGE_WIDTH, window.innerHeight / STAGE_HEIGHT);
-  const [scale, setScale] = useState(fit);
+// Upright screens narrower than a desktop (phones, tablets held vertically) get the phone layout;
+// everything else gets the desktop stage, scaled to fit.
+function measureViewport() {
+  const { innerWidth: w, innerHeight: h } = window;
+  return { mobile: h > w && w < 1000, scale: Math.min(w / STAGE_WIDTH, h / STAGE_HEIGHT) };
+}
+
+function useViewport() {
+  const [viewport, setViewport] = useState(measureViewport);
   useEffect(() => {
-    // Fires on window resizes and browser zoom alike.
-    const observer = new ResizeObserver(() => setScale(fit()));
+    // Fires on window resizes, rotation and browser zoom alike.
+    const observer = new ResizeObserver(() => setViewport(measureViewport()));
     observer.observe(document.documentElement);
     return () => observer.disconnect();
   }, []);
-  return scale;
+  return viewport;
 }
 
 // A setting remembered in this browser; falls back to the default if storage is unavailable.
@@ -117,7 +124,8 @@ export default function App() {
   const [game, dispatch] = useReducer(reducer, 'race', newGame);
   const [gameId, setGameId] = useState(makeGameId);
   const [modal, setModal] = useState<ModalKind | null>(null);
-  const scale = useFitScale();
+  const { mobile, scale } = useViewport();
+  const [menuOpen, setMenuOpen] = useState(false);
   useTurnSounds(game, sound === 'on');
 
   useEffect(() => {
@@ -153,39 +161,75 @@ export default function App() {
 
   const closeModal = () => setModal(null);
 
+  // On phones the menu lives in a slide-in drawer, which closes once something is picked.
+  const sidebar = (
+    <LeftSidebar
+      opponent={opponent}
+      mode={game.mode}
+      onStart={(nextOpponent, mode) => {
+        setMenuOpen(false);
+        startGame(nextOpponent, mode);
+      }}
+      onOpen={(kind) => {
+        setMenuOpen(false);
+        setModal(kind);
+      }}
+    />
+  );
+
+  const content = (
+    <>
+      <GameArea
+        game={game}
+        bot={opponent === 'bot' ? bot : null}
+        onRoll={() => dispatch({ type: 'roll', dice: throwDice() })}
+        onMove={(pieceId) => dispatch({ type: 'move', pieceId })}
+        onPlayAgain={() => startGame(opponent, game.mode)}
+      />
+      <MoveHistory gameId={gameId} moves={game.moves} />
+      {modal === 'learn' && <LearnModal onClose={closeModal} />}
+      {modal === 'settings' && (
+        <SettingsModal
+          lang={lang}
+          botChoice={botChoice}
+          sound={sound}
+          onLangChange={setLang}
+          onSoundChange={setSound}
+          onBotChoiceChange={changeBotChoice}
+          onClose={closeModal}
+        />
+      )}
+      {(modal === 'account' || modal === 'about') && <InfoModal kind={modal} onClose={closeModal} />}
+    </>
+  );
+
   return (
     <LanguageProvider lang={lang}>
-      <div
-        className="app"
-        style={{
-          width: STAGE_WIDTH,
-          height: STAGE_HEIGHT,
-          transform: `translate(-50%, -50%) scale(${scale})`,
-        }}
-      >
-        <LeftSidebar opponent={opponent} mode={game.mode} onStart={startGame} onOpen={setModal} />
-        <GameArea
-          game={game}
-          bot={opponent === 'bot' ? bot : null}
-          onRoll={() => dispatch({ type: 'roll', dice: throwDice() })}
-          onMove={(pieceId) => dispatch({ type: 'move', pieceId })}
-          onPlayAgain={() => startGame(opponent, game.mode)}
-        />
-        <MoveHistory gameId={gameId} moves={game.moves} />
-        {modal === 'learn' && <LearnModal onClose={closeModal} />}
-        {modal === 'settings' && (
-          <SettingsModal
-            lang={lang}
-            botChoice={botChoice}
-            sound={sound}
-            onLangChange={setLang}
-            onSoundChange={setSound}
-            onBotChoiceChange={changeBotChoice}
-            onClose={closeModal}
-          />
-        )}
-        {(modal === 'account' || modal === 'about') && <InfoModal kind={modal} onClose={closeModal} />}
-      </div>
+      {mobile ? (
+        <div className="app app-mobile">
+          <MobileBar onMenu={() => setMenuOpen(true)} />
+          {content}
+          {menuOpen && (
+            <div className="drawer-backdrop" onClick={() => setMenuOpen(false)}>
+              <div className="drawer" onClick={(e) => e.stopPropagation()}>
+                {sidebar}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div
+          className="app"
+          style={{
+            width: STAGE_WIDTH,
+            height: STAGE_HEIGHT,
+            transform: `translate(-50%, -50%) scale(${scale})`,
+          }}
+        >
+          {sidebar}
+          {content}
+        </div>
+      )}
     </LanguageProvider>
   );
 }
