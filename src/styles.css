@@ -1055,6 +1055,89 @@ button:focus-visible {
   cursor: pointer;
 }
 
+/* ---------- Online play ---------- */
+
+.join-card {
+  border-style: dashed;
+}
+
+.bot-tag-you {
+  background: var(--teal);
+}
+
+.online-code {
+  align-self: center;
+  padding: 6px 22px;
+  border-radius: var(--radius);
+  background: var(--paper);
+  font-size: 44px;
+  letter-spacing: 0.08em;
+}
+
+.online-code-input {
+  padding: 8px 12px;
+  border: 2px solid var(--column-dark);
+  border-radius: var(--radius);
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-size: 26px;
+  letter-spacing: 0.1em;
+  text-align: center;
+}
+
+.online-code-input:focus {
+  border-color: var(--navy);
+  outline: none;
+}
+
+.online-link {
+  padding: 8px 12px;
+  border: 2px solid var(--column-dark);
+  border-radius: var(--radius);
+  color: var(--navy);
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+}
+
+.online-primary {
+  --accent: var(--teal);
+  border: 2px solid var(--teal) !important;
+  background: var(--teal) !important;
+  color: var(--white) !important;
+}
+
+.online-waiting {
+  text-align: center;
+  font-weight: 600;
+  animation: target-blink 1.6s ease-in-out infinite;
+}
+
+.online-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.online-action {
+  min-height: 34px;
+  font-size: 14px;
+}
+
+.online-leave {
+  background: transparent;
+  border: 1.5px solid var(--paper);
+  color: var(--paper);
+}
+
+.notice-card {
+  min-width: 380px;
+}
+
+.notice-title {
+  font-size: 34px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
 /* ---------- Learn popup ---------- */
 
 .modal-learn {

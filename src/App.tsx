@@ -7,18 +7,21 @@ import {
   type GameState,
   type Mode,
   type Opponent,
+  type Player,
 } from './game';
 import { BOTS, chooseMove, randomBot, type Bot } from './bots';
-import { LanguageProvider, type Lang } from './i18n';
+import { LanguageProvider, stringsFor, type Lang } from './i18n';
 import LeftSidebar from './components/LeftSidebar';
 import MobileBar from './components/MobileBar';
 import DebugInfo from './components/DebugInfo';
-import GameArea from './components/GameArea';
+import GameArea, { type BoardNotice, type Seat } from './components/GameArea';
 import MoveHistory from './components/MoveHistory';
 import InfoModal from './components/InfoModal';
 import AccountModal from './components/AccountModal';
 import PrivacyModal from './components/PrivacyModal';
+import OnlineModal, { type OnlineIntent } from './components/OnlineModal';
 import { useAccount } from './account';
+import { formatCode, useOnlineGame } from './online';
 import LearnModal from './components/LearnModal';
 import SettingsModal, { type BotChoice, type SoundSetting } from './components/SettingsModal';
 import type { ModalKind } from './components/Modal';
@@ -94,13 +97,10 @@ function useStoredSetting<T extends string>(key: string, fallback: T, allowed: r
 
 const pickBot = (choice: BotChoice): Bot => BOTS.find((b) => b.id === choice) ?? randomBot();
 
-// Plays "message sent" when the turn passes to player A (you, against a bot) and "message
-// received" when it passes to player B.
-function useTurnSounds(game: GameState, enabled: boolean) {
-  const sounds = useMemo(
-    () => ({ A: new Audio(yourTurnSound), B: new Audio(opponentTurnSound) }),
-    [],
-  );
+// Plays "message sent" when the turn passes to the person at this screen and "message received"
+// when it passes to their opponent.
+function useTurnSounds(game: GameState, seats: Record<Player, Seat>, enabled: boolean) {
+  const sounds = useMemo(() => ({ mine: new Audio(yourTurnSound), theirs: new Audio(opponentTurnSound) }), []);
   const firstRender = useRef(true);
 
   useEffect(() => {
@@ -109,7 +109,7 @@ function useTurnSounds(game: GameState, enabled: boolean) {
       return;
     }
     if (!enabled || game.winner) return;
-    const sound = sounds[game.turn];
+    const sound = seats[game.turn].kind === 'me' ? sounds.mine : sounds.theirs;
     sound.currentTime = 0;
     // Browsers may block sound until the page has been clicked; that's fine to ignore.
     sound.play().catch(() => {});
@@ -123,29 +123,68 @@ export default function App() {
     ...BOTS.map((b) => b.id),
   ]);
   const [sound, setSound] = useStoredSetting<SoundSetting>('buul.sound', 'on', ['on', 'off']);
-  const [opponent, setOpponent] = useState<Opponent>('bot');
   const [bot, setBot] = useState(() => pickBot(botChoice));
-  const [game, dispatch] = useReducer(reducer, 'race', newGame);
+  const [localGame, dispatch] = useReducer(reducer, 'race', newGame);
   const [gameId, setGameId] = useState(makeGameId);
   const [modal, setModal] = useState<ModalKind | null>(null);
+  const [onlineIntent, setOnlineIntent] = useState<OnlineIntent>({ kind: 'create', mode: 'race' });
   const { mobile, scale } = useViewport();
   const [menuOpen, setMenuOpen] = useState(false);
-  useTurnSounds(game, sound === 'on');
+  const t = stringsFor(lang);
 
   const account = useAccount();
+  const online = useOnlineGame(account.uid);
+  const onlineGame = online.game;
+  const mySide = online.session?.side ?? null;
+  const inOnline = online.session !== null;
+  const opponent: Opponent = inOnline ? 'online' : 'bot';
+
+  // While an online game is loading, an empty board stands in for it.
+  const placeholder = useMemo(() => newGame('race'), []);
+  const game = inOnline ? onlineGame?.state ?? placeholder : localGame;
+  const locked = inOnline && onlineGame?.status !== 'playing';
+
+  const seats: Record<Player, Seat> = inOnline
+    ? {
+        A: { kind: mySide === 'A' ? 'me' : 'remote', name: onlineGame?.players.A.nickname },
+        B: { kind: mySide === 'B' ? 'me' : 'remote', name: onlineGame?.players.B?.nickname },
+      }
+    : {
+        A: { kind: 'me', name: account.profile?.nickname },
+        B: { kind: 'bot', name: bot.name, bot },
+      };
+
+  useTurnSounds(game, seats, sound === 'on');
 
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
 
+  // An invite link (?join=123456) opens the join popup with the code filled in.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('join');
+    if (!code) return;
+    params.delete('join');
+    const rest = params.toString();
+    window.history.replaceState(null, '', window.location.pathname + (rest ? `?${rest}` : ''));
+    setOnlineIntent({ kind: 'join', code });
+    setModal('online');
+  }, []);
+
+  // The online popup closes by itself once the friend has joined.
+  useEffect(() => {
+    if (modal === 'online' && onlineGame?.status === 'playing') setModal(null);
+  }, [onlineGame?.status]);
+
   // A signed-in player's statistics count games against bots, where they always play A.
   useEffect(() => {
-    if (game.winner && opponent === 'bot') account.recordGame(game.mode, game.winner === 'A');
+    if (game.winner && !inOnline) account.recordGame(game.mode, game.winner === 'A');
   }, [game.winner]); // only the end of a game is recorded
 
   // The bot always plays B: it rolls, then picks a piece according to its personality.
   useEffect(() => {
-    if (opponent !== 'bot' || game.turn !== 'B' || game.winner) return;
+    if (inOnline || game.turn !== 'B' || game.winner) return;
     const timer = setTimeout(() => {
       if (game.roll === null) {
         dispatch({ type: 'roll', dice: throwDice() });
@@ -155,13 +194,27 @@ export default function App() {
       }
     }, BOT_DELAY_MS);
     return () => clearTimeout(timer);
-  }, [opponent, game, bot]);
+  }, [inOnline, game, bot]);
 
-  const startGame = (nextOpponent: Opponent, mode: Mode) => {
-    setOpponent(nextOpponent);
-    if (nextOpponent === 'bot') setBot(pickBot(botChoice));
+  // Online, a move is worked out here and saved for both players; against a bot it stays local.
+  const act = (action: Action) => {
+    if (!inOnline) return dispatch(action);
+    if (!onlineGame || onlineGame.status !== 'playing') return;
+    const next = reducer(onlineGame.state, action);
+    if (next !== onlineGame.state) online.saveState(next).catch(() => {});
+  };
+
+  const startBotGame = (mode: Mode) => {
+    if (inOnline) online.leave();
+    setBot(pickBot(botChoice));
     setGameId(makeGameId());
     dispatch({ type: 'new', mode });
+  };
+
+  const startGame = (nextOpponent: Opponent, mode: Mode) => {
+    if (nextOpponent === 'bot') return startBotGame(mode);
+    setOnlineIntent({ kind: 'create', mode });
+    setModal('online');
   };
 
   // A specific bot takes over the current game right away; "random" applies from the next game.
@@ -172,6 +225,16 @@ export default function App() {
 
   const closeModal = () => setModal(null);
 
+  const opponentSide: Player | null = mySide ? (mySide === 'A' ? 'B' : 'A') : null;
+  const notice: BoardNotice | null =
+    inOnline && onlineGame?.status === 'left' && onlineGame.leftBy !== mySide && opponentSide
+      ? {
+          title: t.online.left(seats[opponentSide].name ?? t.player(opponentSide)),
+          action: t.online.backToBots,
+          onAction: () => startBotGame(game.mode),
+        }
+      : null;
+
   // On phones the menu lives in a slide-in drawer, which closes once something is picked.
   const sidebar = (
     <LeftSidebar
@@ -180,6 +243,11 @@ export default function App() {
       onStart={(nextOpponent, mode) => {
         setMenuOpen(false);
         startGame(nextOpponent, mode);
+      }}
+      onJoin={() => {
+        setMenuOpen(false);
+        setOnlineIntent({ kind: 'join' });
+        setModal('online');
       }}
       onOpen={(kind) => {
         setMenuOpen(false);
@@ -192,12 +260,19 @@ export default function App() {
     <>
       <GameArea
         game={game}
-        bot={opponent === 'bot' ? bot : null}
-        onRoll={() => dispatch({ type: 'roll', dice: throwDice() })}
-        onMove={(pieceId) => dispatch({ type: 'move', pieceId })}
-        onPlayAgain={() => startGame(opponent, game.mode)}
+        seats={seats}
+        locked={locked}
+        notice={notice}
+        onRoll={() => act({ type: 'roll', dice: throwDice() })}
+        onMove={(pieceId) => act({ type: 'move', pieceId })}
+        onPlayAgain={() => (inOnline ? act({ type: 'new', mode: game.mode }) : startBotGame(game.mode))}
       />
-      <MoveHistory gameId={gameId} moves={game.moves} />
+      <MoveHistory
+        gameId={online.session ? formatCode(online.session.code) : gameId}
+        moves={game.moves}
+        onlineCode={online.session?.code ?? null}
+        onLeave={() => startBotGame(game.mode)}
+      />
       {modal === 'learn' && <LearnModal onClose={closeModal} />}
       {modal === 'settings' && (
         <SettingsModal
@@ -213,6 +288,18 @@ export default function App() {
       {modal === 'account' && <AccountModal onClose={closeModal} onOpenPrivacy={() => setModal('privacy')} />}
       {modal === 'about' && <InfoModal onClose={closeModal} onOpenPrivacy={() => setModal('privacy')} />}
       {modal === 'privacy' && <PrivacyModal onClose={closeModal} />}
+      {modal === 'online' && (
+        <OnlineModal
+          intent={onlineIntent}
+          online={online}
+          onClose={closeModal}
+          onOpenAccount={() => setModal('account')}
+          onCancelGame={() => {
+            online.leave();
+            closeModal();
+          }}
+        />
+      )}
     </>
   );
 

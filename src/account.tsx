@@ -5,19 +5,23 @@ import type { Profile } from './accountService';
 type Service = typeof import('./accountService');
 
 // needsNickname: signed in for the first time, and no profile until a nickname is chosen.
-export type AccountStatus = 'loading' | 'signedOut' | 'needsNickname' | 'signedIn';
+// guest: signed in anonymously to play online, with no account or profile.
+export type AccountStatus = 'loading' | 'signedOut' | 'guest' | 'needsNickname' | 'signedIn';
 
 // Firebase error codes worth explaining to the player; anything else shows a general message.
 export type AccountError = 'unauthorized-domain' | 'popup-blocked' | 'network' | 'other';
 
 interface Account {
   status: AccountStatus;
+  uid: string | null;
   profile: Profile | null;
   error: AccountError | null;
   // The raw Firebase error code, shown in small print to help troubleshooting.
   errorCode: string | null;
   busy: boolean;
   signIn: () => Promise<void>;
+  // Signs in anonymously if nobody is signed in and returns the player's id; throws on failure.
+  signInAsGuest: () => Promise<string>;
   reloadProfile: () => Promise<void>;
   createProfile: (nickname: string) => Promise<void>;
   signOut: () => Promise<void>;
@@ -59,15 +63,15 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     service.current.then((s) => {
       if (cancelled) return;
-      unsubscribe = s.watchUser(async (nextUid) => {
-        setUid(nextUid);
-        if (!nextUid) {
+      unsubscribe = s.watchUser(async (user) => {
+        setUid(user?.uid ?? null);
+        if (!user || user.guest) {
           setProfile(null);
-          setStatus('signedOut');
+          setStatus(user ? 'guest' : 'signedOut');
           return;
         }
         try {
-          const loaded = await s.loadProfile(nextUid);
+          const loaded = await s.loadProfile(user.uid);
           setProfile(loaded);
           setStatus(loaded ? 'signedIn' : 'needsNickname');
         } catch (e) {
@@ -98,11 +102,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
 
   const account: Account = {
     status,
+    uid,
     profile,
     error,
     errorCode,
     busy,
     signIn: () => run((s) => s.signInWithGoogle()),
+    signInAsGuest: async () => (await service.current!).signInAsGuest(),
     reloadProfile: () =>
       run(async (s) => {
         const loaded = await s.loadProfile(uid!);

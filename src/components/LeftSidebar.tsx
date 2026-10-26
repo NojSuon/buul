@@ -6,11 +6,13 @@ import type { ModalKind } from './Modal';
 interface Props {
   opponent: Opponent;
   mode: Mode;
+  // Picking a mode under "Play online" creates an online game; under "Play with bots", a bot game.
   onStart: (opponent: Opponent, mode: Mode) => void;
+  onJoin: () => void;
   onOpen: (modal: ModalKind) => void;
 }
 
-export default function LeftSidebar({ opponent, mode, onStart, onOpen }: Props) {
+export default function LeftSidebar({ opponent, mode, onStart, onJoin, onOpen }: Props) {
   const t = useStrings();
   const [expanded, setExpanded] = useState<Opponent | null>('bot');
   const sections: { id: Opponent; label: string }[] = [
@@ -50,6 +52,11 @@ export default function LeftSidebar({ opponent, mode, onStart, onOpen }: Props) 
                     <span className="mode-blurb">{t.modeBlurbs[m.id]}</span>
                   </button>
                 ))}
+              {open && section.id === 'online' && (
+                <button className="mode-card join-card" onClick={onJoin}>
+                  <span className="mode-name">{t.nav.joinGame}</span>
+                </button>
+              )}
             </div>
           );
         })}

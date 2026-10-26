@@ -5,8 +5,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Nicknames: 2-20 characters and no offensive words. The game checks this too (including
+    // disguised spellings); this is the safety net for anyone bypassing the game.
+    function isValidNickname(n) {
+      return n is string
+        && n.size() >= 2
+        && n.size() <= 20
+        && !n.lower().matches('.*(fuck|shit|bitch|cunt|asshole|bastard|whore|slut|faggot|nigger|nigga|retard|rapist|pussy|penis|vagina|porn|dildo|wank|jizz|hitler|kike|tranny|motherf|blowjob|twat|puta|puto|pendej|mierd|cabron|cabrón|verga|chinga|cojon|cojón|maric|gilipolla|malparid|hijueput|hijodeput|culiao|culero|pinche|panocha|follar|sudaca|negrata).*');
+    }
+
     // Each player has one record, users/{their id}. Only that signed-in player can read, create,
-    // change or delete it.
+    // change or delete it. Guests (anonymous sign-in) have no record.
     match /users/{uid} {
       function isOwner() {
         return request.auth != null && request.auth.uid == uid;
@@ -15,9 +24,7 @@ service cloud.firestore {
       // A record holds exactly a nickname, the creation date and the game statistics.
       function isValidProfile(data) {
         return data.keys().hasOnly(['nickname', 'createdAt', 'stats'])
-          && data.nickname is string
-          && data.nickname.size() >= 2
-          && data.nickname.size() <= 20
+          && isValidNickname(data.nickname)
           && data.stats is map
           && data.stats.keys().hasOnly(['race', 'capture']);
       }
@@ -29,6 +36,74 @@ service cloud.firestore {
       allow update: if isOwner()
         && isValidProfile(request.resource.data)
         && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    // Online games, games/{6-digit code}. Player A creates the game; player B joins it with the
+    // code. Only the two players can see a game once it has started.
+    match /games/{code} {
+      function signedIn() {
+        return request.auth != null;
+      }
+
+      function isPlayer() {
+        return signedIn() && request.auth.uid in resource.data.uids;
+      }
+
+      // These never change after the game is created (or joined).
+      function keepsIdentity() {
+        return request.resource.data.uids == resource.data.uids
+          && request.resource.data.players == resource.data.players
+          && request.resource.data.mode == resource.data.mode
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.expireAt == resource.data.expireAt;
+      }
+
+      // Only the player whose turn it is may change the board, except to start a rematch once
+      // the game has a winner.
+      function boardChangeAllowed() {
+        return request.resource.data.state == resource.data.state
+          || resource.data.players[resource.data.state.turn].uid == request.auth.uid
+          || resource.data.state.winner != null;
+      }
+
+      // Anyone signed in can look up a code (to learn it doesn't exist) or a game that is waiting
+      // for its second player, to join it.
+      allow read: if signedIn() && (resource == null || resource.data.status == 'waiting' || isPlayer());
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['mode', 'status', 'players', 'uids', 'state', 'createdAt', 'expireAt', 'leftBy'])
+        && request.resource.data.mode in ['race', 'capture']
+        && request.resource.data.status == 'waiting'
+        && request.resource.data.uids == [request.auth.uid]
+        && request.resource.data.players.A.uid == request.auth.uid
+        && isValidNickname(request.resource.data.players.A.nickname)
+        && request.resource.data.players.B == null
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.expireAt is timestamp;
+
+      allow update: if signedIn() && (
+        // Joining: a second player adds themselves as B and the game starts.
+        (resource.data.status == 'waiting'
+          && !(request.auth.uid in resource.data.uids)
+          && request.resource.data.uids == resource.data.uids.concat([request.auth.uid])
+          && request.resource.data.players.A == resource.data.players.A
+          && request.resource.data.players.B.uid == request.auth.uid
+          && isValidNickname(request.resource.data.players.B.nickname)
+          && request.resource.data.status == 'playing'
+          && request.resource.data.state == resource.data.state
+          && request.resource.data.mode == resource.data.mode
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.expireAt == resource.data.expireAt)
+        ||
+        // Playing: moves, rematches and leaving, by one of the two players.
+        (isPlayer()
+          && resource.data.status in ['playing', 'left']
+          && request.resource.data.status in ['playing', 'left']
+          && keepsIdentity()
+          && boardChangeAllowed())
+      );
+
+      allow delete: if isPlayer();
     }
 
     // Everything else is closed.

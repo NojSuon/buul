@@ -14,6 +14,7 @@ const en = {
   menu: 'Menu',
   nav: {
     playOnline: 'Play online',
+    joinGame: 'Join with a code',
     playBots: 'Play with bots',
     learn: 'Learn',
     settings: 'Settings',
@@ -58,6 +59,42 @@ const en = {
   } as Record<Mode, string>,
   playAgain: 'Play again',
   viewBoard: 'View board',
+  online: {
+    createTitle: (mode: string) => `Play ${mode} online`,
+    joinTitle: 'Join a friend’s game',
+    waitingTitle: 'Invite your friend',
+    playingAs: (name: string) => `You’ll play as ${name}.`,
+    guestIntro: 'Choose a nickname for this game, or sign in to use your account.',
+    orSignIn: 'Sign in with Google instead',
+    needsNickname: 'Create your nickname in Account first.',
+    openAccount: 'Open Account',
+    create: 'Create game',
+    join: 'Join game',
+    connecting: 'Connecting…',
+    codeLabel: 'Game code',
+    inviteLabel: 'Invite link',
+    share: 'Send this code or link to your friend. The game starts as soon as they join.',
+    shareText: 'Play Buul with me!',
+    copyLink: 'Copy invite link',
+    copied: 'Copied!',
+    shareButton: 'Share…',
+    waiting: 'Waiting for your friend to join…',
+    cancel: 'Cancel this game',
+    trust: 'Dice are rolled on each player’s own device, so play with people you trust.',
+    errors: {
+      'bad-code': 'Enter the 6-digit game code.',
+      'not-found': 'No game is waiting with that code. Check it with your friend.',
+      full: 'That game has already started with someone else.',
+      'guests-disabled': 'Playing as a guest isn’t switched on yet. Sign in with Google instead.',
+      connection: 'Couldn’t connect. Check your internet and try again.',
+    },
+    you: 'You',
+    opponentTurn: (name: string) => `${name} is playing…`,
+    waitingStatus: 'Waiting for your friend to join…',
+    left: (name: string) => `${name} left the game`,
+    backToBots: 'Play against a bot',
+    leave: 'Leave game',
+  },
   gameId: 'Game ID',
   moves: 'Moves',
   noMoves: 'No moves yet',
@@ -143,16 +180,24 @@ const en = {
         </p>
         <h3>What we store</h3>
         <p>
-          A nickname (we start you with a random one, and you can change it), your game statistics
-          (games played and won in each mode), and the date your account was created. They are
-          stored in Google Cloud Firestore, in data centres in the European Union.
+          The nickname you choose, your game statistics (games played and won against bots in each
+          mode), and the date your account was created. They are stored in Google Cloud Firestore,
+          in data centres in the European Union.
+        </p>
+        <h3>Playing online</h3>
+        <p>
+          To play online without an account, Firebase gives your browser a random anonymous ID, with
+          no email or name attached. While an online game lasts we store both players’ nicknames,
+          that ID or account ID, and the moves of the game. Your opponent sees your nickname.
+          A game is deleted when both players leave it, and automatically two days after it started.
         </p>
         <h3>What we never do</h3>
         <p>No ads, no analytics, no tracking, and we never sell or share your data.</p>
         <h3>Who can see it</h3>
         <p>
-          Only you. Security rules stop anyone else from reading or changing your data. The Mati
-          Mati team can access the database only to keep the service running.
+          Only you, plus your nickname for the opponent of an online game. Security rules stop
+          anyone else from reading or changing your data. The Mati Mati team can access the
+          database only to keep the service running.
         </p>
         <h3>Where it is processed</h3>
         <p>
@@ -162,12 +207,13 @@ const en = {
         <h3>Deleting your data</h3>
         <p>
           Open <strong>Account → Delete my account</strong> to permanently erase your nickname,
-          statistics and account straight away, or email us and we will do it for you.
+          statistics, online games and account straight away, or email us and we will do it for
+          you.
         </p>
         <h3>Children</h3>
         <p>
-          Accounts are for ages 13 and up. Younger players can play without an account, which
-          stores nothing about them.
+          Accounts and online play are for ages 13 and up. Younger players can play against the
+          bots, which stores nothing about them.
         </p>
         <h3>Changes</h3>
         <p>If this policy changes, we will update this page and its date.</p>
@@ -280,6 +326,7 @@ const es: Strings = {
   menu: 'Menú',
   nav: {
     playOnline: 'Jugar en línea',
+    joinGame: 'Unirse con un código',
     playBots: 'Jugar con bots',
     learn: 'Aprender',
     settings: 'Configuración',
@@ -324,6 +371,42 @@ const es: Strings = {
   },
   playAgain: 'Jugar de nuevo',
   viewBoard: 'Ver el tablero',
+  online: {
+    createTitle: (mode: string) => `Jugar ${mode} en línea`,
+    joinTitle: 'Unirse a la partida de un amigo',
+    waitingTitle: 'Invita a tu amigo',
+    playingAs: (name: string) => `Jugarás como ${name}.`,
+    guestIntro: 'Elige un apodo para esta partida, o inicia sesión para usar tu cuenta.',
+    orSignIn: 'Mejor iniciar sesión con Google',
+    needsNickname: 'Primero crea tu apodo en Cuenta.',
+    openAccount: 'Abrir Cuenta',
+    create: 'Crear partida',
+    join: 'Unirse',
+    connecting: 'Conectando…',
+    codeLabel: 'Código de partida',
+    inviteLabel: 'Enlace de invitación',
+    share: 'Envía este código o enlace a tu amigo. La partida empieza en cuanto se una.',
+    shareText: '¡Juega Buul conmigo!',
+    copyLink: 'Copiar enlace',
+    copied: '¡Copiado!',
+    shareButton: 'Compartir…',
+    waiting: 'Esperando a que tu amigo se una…',
+    cancel: 'Cancelar esta partida',
+    trust: 'Los dados se lanzan en el dispositivo de cada jugador, así que juega con personas de confianza.',
+    errors: {
+      'bad-code': 'Escribe el código de 6 dígitos.',
+      'not-found': 'No hay ninguna partida esperando con ese código. Revísalo con tu amigo.',
+      full: 'Esa partida ya empezó con otra persona.',
+      'guests-disabled': 'Jugar como invitado aún no está activado. Inicia sesión con Google.',
+      connection: 'No se pudo conectar. Revisa tu internet e inténtalo de nuevo.',
+    },
+    you: 'Tú',
+    opponentTurn: (name: string) => `${name} está jugando…`,
+    waitingStatus: 'Esperando a que tu amigo se una…',
+    left: (name: string) => `${name} salió de la partida`,
+    backToBots: 'Jugar contra un bot',
+    leave: 'Salir de la partida',
+  },
   gameId: 'ID de partida',
   moves: 'Movimientos',
   noMoves: 'Aún no hay movimientos',
@@ -410,16 +493,25 @@ const es: Strings = {
         </p>
         <h3>Qué guardamos</h3>
         <p>
-          Un apodo (empiezas con uno aleatorio y puedes cambiarlo), tus estadísticas de juego
-          (partidas jugadas y ganadas en cada modo) y la fecha en que creaste tu cuenta. Se guardan
-          en Google Cloud Firestore, en centros de datos de la Unión Europea.
+          El apodo que elijas, tus estadísticas de juego (partidas jugadas y ganadas contra bots en
+          cada modo) y la fecha en que creaste tu cuenta. Se guardan en Google Cloud Firestore, en
+          centros de datos de la Unión Europea.
+        </p>
+        <h3>Jugar en línea</h3>
+        <p>
+          Para jugar en línea sin cuenta, Firebase le da a tu navegador un identificador anónimo
+          aleatorio, sin correo ni nombre. Mientras dura una partida en línea guardamos los apodos
+          de ambos jugadores, ese identificador o el de tu cuenta, y las jugadas. Tu rival ve tu
+          apodo. La partida se elimina cuando ambos jugadores salen, y automáticamente dos días
+          después de empezar.
         </p>
         <h3>Lo que nunca hacemos</h3>
         <p>Sin anuncios, sin analíticas, sin rastreo, y nunca vendemos ni compartimos tus datos.</p>
         <h3>Quién puede verlos</h3>
         <p>
-          Solo tú. Las reglas de seguridad impiden que cualquier otra persona lea o cambie tus datos.
-          El equipo de Mati Mati solo puede acceder a la base de datos para mantener el servicio.
+          Solo tú, además de tu apodo para tu rival en una partida en línea. Las reglas de seguridad
+          impiden que cualquier otra persona lea o cambie tus datos. El equipo de Mati Mati solo
+          puede acceder a la base de datos para mantener el servicio.
         </p>
         <h3>Dónde se procesan</h3>
         <p>
@@ -430,12 +522,13 @@ const es: Strings = {
         <h3>Eliminar tus datos</h3>
         <p>
           Abre <strong>Cuenta → Eliminar mi cuenta</strong> para borrar al instante y para siempre tu
-          apodo, tus estadísticas y tu cuenta, o escríbenos y lo haremos por ti.
+          apodo, tus estadísticas, tus partidas en línea y tu cuenta, o escríbenos y lo haremos por
+          ti.
         </p>
         <h3>Menores</h3>
         <p>
-          Las cuentas son para mayores de 13 años. Quienes sean menores pueden jugar sin cuenta, que
-          no guarda nada sobre ellos.
+          Las cuentas y el juego en línea son para mayores de 13 años. Quienes sean menores pueden
+          jugar contra los bots, que no guarda nada sobre ellos.
         </p>
         <h3>Cambios</h3>
         <p>Si esta política cambia, actualizaremos esta página y su fecha.</p>
@@ -542,6 +635,9 @@ const es: Strings = {
 };
 
 const STRINGS: Record<Lang, Strings> = { en, es };
+
+// For code above the LanguageProvider; components use useStrings().
+export const stringsFor = (lang: Lang) => STRINGS[lang];
 
 const LanguageContext = createContext<Strings>(en);
 

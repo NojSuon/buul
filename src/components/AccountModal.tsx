@@ -1,79 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { useAccount } from '../account';
 import { MODES } from '../game';
 import { useStrings } from '../i18n';
-import { NICKNAME_MAX, nicknameProblem, suggestNickname } from '../nickname';
+import { suggestNickname } from '../nickname';
 import Modal from './Modal';
-
-interface NicknameFormProps {
-  initial: string;
-  submitLabel: string;
-  // Offer a dice button that suggests a nickname (used when creating one).
-  suggest?: boolean;
-  onSubmit: (nickname: string) => Promise<void>;
-}
-
-// A nickname box that explains what's wrong as the player types (too short, odd characters,
-// offensive words) and only lets valid nicknames through.
-function NicknameForm({ initial, submitLabel, suggest, onSubmit }: NicknameFormProps) {
-  const t = useStrings().account;
-  const account = useAccount();
-  const [nickname, setNickname] = useState(initial);
-  const [saved, setSaved] = useState(false);
-
-  useEffect(() => setNickname(initial), [initial]);
-
-  const trimmed = nickname.trim();
-  const problem = nicknameProblem(trimmed);
-  const unchanged = trimmed === initial;
-
-  const submit = async (e: FormEvent) => {
-    e.preventDefault();
-    if (problem || account.busy) return;
-    await onSubmit(trimmed);
-    setSaved(true);
-  };
-
-  return (
-    <form className="account-field" onSubmit={submit}>
-      <label className="account-label" htmlFor="nickname">
-        {t.nickname}
-      </label>
-      <span className="account-row">
-        <input
-          id="nickname"
-          value={nickname}
-          maxLength={NICKNAME_MAX}
-          autoComplete="off"
-          spellCheck={false}
-          aria-invalid={problem !== null && !unchanged}
-          aria-describedby="nickname-hint"
-          onChange={(e) => {
-            setNickname(e.target.value);
-            setSaved(false);
-          }}
-        />
-        {suggest && (
-          <button
-            type="button"
-            className="pill-button dice-button"
-            onClick={() => setNickname(suggestNickname())}
-            title={t.suggest}
-            aria-label={t.suggest}
-          >
-            🎲
-          </button>
-        )}
-        <button type="submit" className="pill-button account-save" disabled={!!problem || (unchanged && !suggest) || account.busy}>
-          {saved && unchanged ? t.saved : submitLabel}
-        </button>
-      </span>
-      <span id="nickname-hint" className={problem && !unchanged ? 'nickname-problem' : 'settings-hint'}>
-        {problem && !unchanged ? t.nicknameProblems[problem] : t.nicknameHint}
-      </span>
-    </form>
-  );
-}
+import NicknameForm from './NicknameForm';
 
 export default function AccountModal({ onClose, onOpenPrivacy }: { onClose: () => void; onOpenPrivacy: () => void }) {
   const t = useStrings().account;
@@ -88,7 +19,8 @@ export default function AccountModal({ onClose, onOpenPrivacy }: { onClose: () =
       <div className="modal-body account-body">
         {account.status === 'loading' && <p>{t.loading}</p>}
 
-        {account.status === 'signedOut' && (
+        {/* Guests (signed in anonymously to play online) can sign in with Google too. */}
+        {(account.status === 'signedOut' || account.status === 'guest') && (
           <>
             <p>{t.intro}</p>
             <button className="google-button" onClick={account.signIn} disabled={account.busy}>
@@ -102,7 +34,13 @@ export default function AccountModal({ onClose, onOpenPrivacy }: { onClose: () =
         {account.status === 'needsNickname' && (
           <>
             <p>{t.createIntro}</p>
-            <NicknameForm initial={suggestion} submitLabel={t.create} suggest onSubmit={account.createProfile} />
+            <NicknameForm
+              initial={suggestion}
+              submitLabel={t.create}
+              busy={account.busy}
+              suggest
+              onSubmit={account.createProfile}
+            />
             <button className="link-button" onClick={account.signOut} disabled={account.busy}>
               {t.signOut}
             </button>
@@ -111,7 +49,12 @@ export default function AccountModal({ onClose, onOpenPrivacy }: { onClose: () =
 
         {account.status === 'signedIn' && account.profile && (
           <>
-            <NicknameForm initial={account.profile.nickname} submitLabel={t.save} onSubmit={account.rename} />
+            <NicknameForm
+              initial={account.profile.nickname}
+              submitLabel={t.save}
+              busy={account.busy}
+              onSubmit={account.rename}
+            />
 
             <div>
               <h3>{t.stats}</h3>

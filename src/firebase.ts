@@ -1,8 +1,6 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-// The lite Firestore client is much smaller; live updates (for online play later) would need the
-// full one.
-import { getFirestore } from 'firebase/firestore/lite';
+import { browserPopupRedirectResolver, getAuth, inMemoryPersistence, initializeAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 // The web app's public Firebase configuration. These values identify the project and are meant to
 // be visible in website code; the Firestore security rules (firestore.rules) protect the data.
@@ -18,5 +16,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-export const auth = getAuth(app);
+// Adding ?testsession to the address keeps the sign-in in this tab only, so two tabs can play an
+// online game against each other as two different guests (for testing).
+const testSession = new URLSearchParams(window.location.search).has('testsession');
+
+export const auth = testSession
+  ? initializeAuth(app, { persistence: inMemoryPersistence, popupRedirectResolver: browserPopupRedirectResolver })
+  : getAuth(app);
 export const db = getFirestore(app);
