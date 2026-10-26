@@ -15,9 +15,15 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  height: 100%;
+}
+
 body {
   margin: 0;
-  background: var(--white);
+  overflow: hidden;
+  background: var(--navy);
 }
 
 button {
@@ -33,10 +39,14 @@ p {
   font-weight: 400;
 }
 
+/* Fixed-size stage, centred and scaled to fit the window from App.tsx. */
 .app {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   display: grid;
-  grid-template-columns: clamp(180px, 21vw, 268px) minmax(0, 1fr) clamp(170px, 21vw, 268px);
-  min-height: 100vh;
+  grid-template-columns: 268px minmax(0, 1fr) 268px;
+  transform-origin: center;
 }
 
 /* ---------- Shared ---------- */
@@ -213,8 +223,7 @@ button:focus-visible {
   flex-direction: column;
   gap: 1px;
   flex: 1;
-  min-height: 160px;
-  max-height: calc(100vh - 220px);
+  min-height: 0;
   margin: 0;
   padding: 4px 0;
   overflow-y: auto;
@@ -246,7 +255,7 @@ button:focus-visible {
   flex-direction: column;
   justify-content: center;
   gap: 24px;
-  padding: 32px clamp(16px, 3.75vw, 48px);
+  padding: 32px 48px;
   background: var(--white);
 }
 
@@ -284,7 +293,7 @@ button:focus-visible {
 }
 
 .player-title h2 {
-  font-size: clamp(22px, 2.7vw, 34px);
+  font-size: 34px;
   line-height: 1;
   text-transform: uppercase;
   white-space: nowrap;
@@ -402,7 +411,7 @@ button:focus-visible {
   gap: 1px;
   flex: 1;
   max-width: 580px;
-  height: min(54vh, 384px);
+  height: 400px;
 }
 
 .column {
@@ -502,7 +511,7 @@ button:focus-visible {
   flex-direction: column;
   gap: 14px;
   width: min(520px, 100%);
-  max-height: 85vh;
+  max-height: 85%;
   padding: 24px;
   overflow-y: auto;
   border-radius: 16px;
@@ -535,24 +544,4 @@ button:focus-visible {
   width: auto;
   background: var(--navy);
   color: var(--paper);
-}
-
-/* ---------- Narrow screens ---------- */
-
-@media (max-width: 760px) {
-  .app {
-    grid-template-columns: 1fr;
-  }
-
-  .game-area {
-    padding: 24px 16px;
-  }
-
-  .roll {
-    padding-top: 40px;
-  }
-
-  .history {
-    max-height: 240px;
-  }
 }
