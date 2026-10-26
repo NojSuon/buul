@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from 'react';
 
 import { useStrings } from '../i18n';
 
-export type ModalKind = 'learn' | 'settings' | 'account' | 'about';
+export type ModalKind = 'learn' | 'settings' | 'account' | 'about' | 'privacy';
 
 interface Props {
   title: string;

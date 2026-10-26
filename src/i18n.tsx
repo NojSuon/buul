@@ -85,7 +85,83 @@ const en = {
   },
   account: {
     title: 'Account',
-    body: 'Accounts are coming soon. You’ll be able to save games and invite friends to play online.',
+    loading: 'Loading…',
+    intro: 'Sign in to keep your game statistics on any device. You can always play without an account.',
+    signIn: 'Continue with Google',
+    ageNote: 'Accounts are for ages 13 and up. We only store a nickname and your game statistics.',
+    privacyLink: 'Read our privacy policy',
+    nickname: 'Nickname',
+    nicknameHint: 'Shown instead of your real name. 2–20 characters.',
+    save: 'Save',
+    saved: 'Saved',
+    stats: 'Your statistics (games against bots)',
+    mode: 'Mode',
+    played: 'Played',
+    won: 'Won',
+    signOut: 'Sign out',
+    deleteAccount: 'Delete my account',
+    deleteConfirm: 'This permanently deletes your nickname, your statistics and your account. Google will ask you to confirm it’s you.',
+    deleteYes: 'Yes, delete everything',
+    cancel: 'Cancel',
+    errors: {
+      'unauthorized-domain': 'Sign-in isn’t enabled for this website address yet.',
+      'popup-blocked': 'Your browser blocked the sign-in window. Allow pop-ups for this site and try again.',
+      network: 'Couldn’t reach the server. Check your connection and try again.',
+      other: 'Something went wrong. Please try again.',
+    },
+  },
+  privacy: {
+    title: 'Privacy policy',
+    body: (
+      <>
+        <p>
+          <em>Last updated: October 2026.</em> Buul is made by <strong>Mati Mati</strong>. Questions
+          or requests: <a href="mailto:matimati.info@gmail.com">matimati.info@gmail.com</a>.
+        </p>
+        <h3>Playing without an account</h3>
+        <p>
+          We collect no personal data. Your language, sound and bot settings are saved only in your
+          own browser.
+        </p>
+        <h3>Signing in</h3>
+        <p>
+          Accounts use “Continue with Google” through Firebase Authentication, a Google service.
+          To sign you in, Firebase receives your Google account’s email address, name and picture.
+          We use them only to sign you in: we don’t show your name or picture, and we never email
+          you.
+        </p>
+        <h3>What we store</h3>
+        <p>
+          A nickname (we start you with a random one, and you can change it), your game statistics
+          (games played and won in each mode), and the date your account was created. They are
+          stored in Google Cloud Firestore, in data centres in the European Union.
+        </p>
+        <h3>What we never do</h3>
+        <p>No ads, no analytics, no tracking, and we never sell or share your data.</p>
+        <h3>Who can see it</h3>
+        <p>
+          Only you. Security rules stop anyone else from reading or changing your data. The Mati
+          Mati team can access the database only to keep the service running.
+        </p>
+        <h3>Where it is processed</h3>
+        <p>
+          Firebase is operated by Google, so sign-in data may be processed outside your country,
+          including in the United States, under Google’s data protection terms.
+        </p>
+        <h3>Deleting your data</h3>
+        <p>
+          Open <strong>Account → Delete my account</strong> to permanently erase your nickname,
+          statistics and account straight away, or email us and we will do it for you.
+        </p>
+        <h3>Children</h3>
+        <p>
+          Accounts are for ages 13 and up. Younger players can play without an account, which
+          stores nothing about them.
+        </p>
+        <h3>Changes</h3>
+        <p>If this policy changes, we will update this page and its date.</p>
+      </>
+    ),
   },
   about: {
     title: 'About us',
@@ -98,6 +174,7 @@ const en = {
     buul: 'This digital edition of Buul is part of that work: a way to share a traditional Maya game with anyone who would like to learn it and play.',
     contact: 'We would be delighted to hear from you. You can write to us or follow our work here:',
     email: 'Email',
+    privacy: 'Privacy policy',
   },
   learn: {
     title: 'Learn to play Buul',
@@ -263,7 +340,85 @@ const es: Strings = {
   },
   account: {
     title: 'Cuenta',
-    body: 'Las cuentas llegarán pronto. Podrás guardar tus partidas e invitar a tus amistades a jugar en línea.',
+    loading: 'Cargando…',
+    intro: 'Inicia sesión para conservar tus estadísticas en cualquier dispositivo. Siempre puedes jugar sin cuenta.',
+    signIn: 'Continuar con Google',
+    ageNote: 'Las cuentas son para mayores de 13 años. Solo guardamos un apodo y tus estadísticas de juego.',
+    privacyLink: 'Lee nuestra política de privacidad',
+    nickname: 'Apodo',
+    nicknameHint: 'Se muestra en lugar de tu nombre real. De 2 a 20 caracteres.',
+    save: 'Guardar',
+    saved: 'Guardado',
+    stats: 'Tus estadísticas (partidas contra bots)',
+    mode: 'Modo',
+    played: 'Jugadas',
+    won: 'Ganadas',
+    signOut: 'Cerrar sesión',
+    deleteAccount: 'Eliminar mi cuenta',
+    deleteConfirm: 'Esto elimina para siempre tu apodo, tus estadísticas y tu cuenta. Google te pedirá que confirmes que eres tú.',
+    deleteYes: 'Sí, eliminar todo',
+    cancel: 'Cancelar',
+    errors: {
+      'unauthorized-domain': 'El inicio de sesión aún no está activado para esta dirección web.',
+      'popup-blocked': 'Tu navegador bloqueó la ventana de inicio de sesión. Permite las ventanas emergentes para este sitio e inténtalo de nuevo.',
+      network: 'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
+      other: 'Algo salió mal. Inténtalo de nuevo.',
+    },
+  },
+  privacy: {
+    title: 'Política de privacidad',
+    body: (
+      <>
+        <p>
+          <em>Última actualización: octubre de 2026.</em> Buul es un proyecto de{' '}
+          <strong>Mati Mati</strong>. Preguntas o solicitudes:{' '}
+          <a href="mailto:matimati.info@gmail.com">matimati.info@gmail.com</a>.
+        </p>
+        <h3>Jugar sin cuenta</h3>
+        <p>
+          No recopilamos ningún dato personal. Tu idioma, sonido y bot elegido se guardan solo en tu
+          propio navegador.
+        </p>
+        <h3>Iniciar sesión</h3>
+        <p>
+          Las cuentas usan «Continuar con Google» a través de Firebase Authentication, un servicio de
+          Google. Para iniciar tu sesión, Firebase recibe el correo, el nombre y la foto de tu cuenta
+          de Google. Solo los usamos para iniciar tu sesión: no mostramos tu nombre ni tu foto, y
+          nunca te enviamos correos.
+        </p>
+        <h3>Qué guardamos</h3>
+        <p>
+          Un apodo (empiezas con uno aleatorio y puedes cambiarlo), tus estadísticas de juego
+          (partidas jugadas y ganadas en cada modo) y la fecha en que creaste tu cuenta. Se guardan
+          en Google Cloud Firestore, en centros de datos de la Unión Europea.
+        </p>
+        <h3>Lo que nunca hacemos</h3>
+        <p>Sin anuncios, sin analíticas, sin rastreo, y nunca vendemos ni compartimos tus datos.</p>
+        <h3>Quién puede verlos</h3>
+        <p>
+          Solo tú. Las reglas de seguridad impiden que cualquier otra persona lea o cambie tus datos.
+          El equipo de Mati Mati solo puede acceder a la base de datos para mantener el servicio.
+        </p>
+        <h3>Dónde se procesan</h3>
+        <p>
+          Firebase es operado por Google, así que los datos de inicio de sesión pueden procesarse
+          fuera de tu país, incluso en Estados Unidos, bajo las condiciones de protección de datos
+          de Google.
+        </p>
+        <h3>Eliminar tus datos</h3>
+        <p>
+          Abre <strong>Cuenta → Eliminar mi cuenta</strong> para borrar al instante y para siempre tu
+          apodo, tus estadísticas y tu cuenta, o escríbenos y lo haremos por ti.
+        </p>
+        <h3>Menores</h3>
+        <p>
+          Las cuentas son para mayores de 13 años. Quienes sean menores pueden jugar sin cuenta, que
+          no guarda nada sobre ellos.
+        </p>
+        <h3>Cambios</h3>
+        <p>Si esta política cambia, actualizaremos esta página y su fecha.</p>
+      </>
+    ),
   },
   about: {
     title: 'Sobre nosotros',
@@ -276,6 +431,7 @@ const es: Strings = {
     buul: 'Esta edición digital de Buul forma parte de ese trabajo: una manera de compartir un juego maya tradicional con todas las personas que quieran aprenderlo y jugarlo.',
     contact: 'Nos encantará saber de ti. Puedes escribirnos o seguir nuestro trabajo aquí:',
     email: 'Correo',
+    privacy: 'Política de privacidad',
   },
   learn: {
     title: 'Aprende a jugar Buul',

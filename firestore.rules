@@ -1,0 +1,39 @@
+rules_version = '2';
+
+// Security rules for the Buul Firestore database. Paste this into
+// Firebase console -> Firestore Database -> Rules, then click Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Each player has one record, users/{their id}. Only that signed-in player can read, create,
+    // change or delete it.
+    match /users/{uid} {
+      function isOwner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+
+      // A record holds exactly a nickname, the creation date and the game statistics.
+      function isValidProfile(data) {
+        return data.keys().hasOnly(['nickname', 'createdAt', 'stats'])
+          && data.nickname is string
+          && data.nickname.size() >= 2
+          && data.nickname.size() <= 20
+          && data.stats is map
+          && data.stats.keys().hasOnly(['race', 'capture']);
+      }
+
+      allow read, delete: if isOwner();
+      allow create: if isOwner()
+        && isValidProfile(request.resource.data)
+        && request.resource.data.createdAt == request.time;
+      allow update: if isOwner()
+        && isValidProfile(request.resource.data)
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    // Everything else is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

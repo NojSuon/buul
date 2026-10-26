@@ -2,23 +2,8 @@ import { useStrings } from '../i18n';
 import Modal from './Modal';
 import matiMatiLogo from '../assets/mati-mati-logo.png';
 
-interface Props {
-  kind: 'account' | 'about';
-  onClose: () => void;
-}
-
-export default function InfoModal({ kind, onClose }: Props) {
+export default function InfoModal({ onClose, onOpenPrivacy }: { onClose: () => void; onOpenPrivacy: () => void }) {
   const t = useStrings();
-
-  if (kind === 'account') {
-    return (
-      <Modal title={t.account.title} onClose={onClose}>
-        <div className="modal-body">
-          <p>{t.account.body}</p>
-        </div>
-      </Modal>
-    );
-  }
 
   return (
     <Modal title={t.about.title} onClose={onClose}>
@@ -45,6 +30,9 @@ export default function InfoModal({ kind, onClose }: Props) {
             </a>
           </li>
         </ul>
+        <button className="link-button" onClick={onOpenPrivacy}>
+          {t.about.privacy}
+        </button>
       </div>
     </Modal>
   );

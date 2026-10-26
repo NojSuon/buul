@@ -16,6 +16,9 @@ import DebugInfo from './components/DebugInfo';
 import GameArea from './components/GameArea';
 import MoveHistory from './components/MoveHistory';
 import InfoModal from './components/InfoModal';
+import AccountModal from './components/AccountModal';
+import PrivacyModal from './components/PrivacyModal';
+import { useAccount } from './account';
 import LearnModal from './components/LearnModal';
 import SettingsModal, { type BotChoice, type SoundSetting } from './components/SettingsModal';
 import type { ModalKind } from './components/Modal';
@@ -129,9 +132,16 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
   useTurnSounds(game, sound === 'on');
 
+  const account = useAccount();
+
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
+
+  // A signed-in player's statistics count games against bots, where they always play A.
+  useEffect(() => {
+    if (game.winner && opponent === 'bot') account.recordGame(game.mode, game.winner === 'A');
+  }, [game.winner]); // only the end of a game is recorded
 
   // The bot always plays B: it rolls, then picks a piece according to its personality.
   useEffect(() => {
@@ -200,7 +210,9 @@ export default function App() {
           onClose={closeModal}
         />
       )}
-      {(modal === 'account' || modal === 'about') && <InfoModal kind={modal} onClose={closeModal} />}
+      {modal === 'account' && <AccountModal onClose={closeModal} onOpenPrivacy={() => setModal('privacy')} />}
+      {modal === 'about' && <InfoModal onClose={closeModal} onOpenPrivacy={() => setModal('privacy')} />}
+      {modal === 'privacy' && <PrivacyModal onClose={closeModal} />}
     </>
   );
 
