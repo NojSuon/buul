@@ -539,6 +539,153 @@ button:focus-visible {
   text-transform: uppercase;
 }
 
+/* ---------- Learn popup ---------- */
+
+.modal-learn {
+  width: 640px;
+  max-height: 90%;
+}
+
+.tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.tab {
+  flex: 1;
+  padding: 6px 8px;
+  border: 2px solid var(--navy);
+  border-radius: var(--radius);
+  background: var(--white);
+  font-size: 14px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.tab:hover {
+  background: var(--paper);
+}
+
+.tab-active,
+.tab-active:hover {
+  background: var(--navy);
+  color: var(--paper);
+}
+
+.learn-body {
+  height: 470px;
+  padding-right: 6px;
+  overflow-y: auto;
+}
+
+.learn-body h3:first-child {
+  margin-top: 0;
+}
+
+.learn-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 4px 0 8px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.learn-figure figcaption {
+  font-size: 13px;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.mini-board {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mini-column {
+  position: absolute;
+  top: 0;
+  border-radius: 6px;
+}
+
+.mini-board .column-light {
+  background: var(--white);
+}
+
+.mini-label {
+  position: absolute;
+  top: 2px;
+  left: 4px;
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-size: 8px;
+}
+
+.mini-arrows {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.mini-blocked {
+  fill: #c0392b;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.mini-piece {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--piece);
+  color: var(--white);
+  font-size: 12px;
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+
+.mini-piece-ghost {
+  border: 2px dashed var(--piece);
+  background: transparent;
+}
+
+.mini-piece-captured {
+  opacity: 0.45;
+}
+
+.mini-piece-highlight,
+.mini-piece-crowned {
+  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--navy);
+}
+
+.dice-examples {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  padding: 12px;
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.dice-example {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dice-example-value {
+  margin-left: 4px;
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-size: 16px;
+}
+
 .modal-close {
   align-self: flex-end;
   width: auto;

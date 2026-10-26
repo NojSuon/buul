@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { MODES, type Mode, type Opponent } from '../game';
-import type { ModalKind } from './InfoModal';
+import type { ModalKind } from './Modal';
 
 interface Props {
   opponent: Opponent;

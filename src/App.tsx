@@ -12,7 +12,9 @@ import {
 import LeftSidebar from './components/LeftSidebar';
 import GameArea from './components/GameArea';
 import MoveHistory from './components/MoveHistory';
-import InfoModal, { type ModalKind } from './components/InfoModal';
+import InfoModal from './components/InfoModal';
+import LearnModal from './components/LearnModal';
+import type { ModalKind } from './components/Modal';
 
 type Action =
   | { type: 'roll'; dice: boolean[] }
@@ -104,7 +106,8 @@ export default function App() {
         onMove={(pieceId) => dispatch({ type: 'move', pieceId })}
       />
       <MoveHistory gameId={gameId} moves={game.moves} />
-      {modal && <InfoModal kind={modal} onClose={() => setModal(null)} />}
+      {modal === 'learn' && <LearnModal onClose={() => setModal(null)} />}
+      {(modal === 'account' || modal === 'about') && <InfoModal kind={modal} onClose={() => setModal(null)} />}
     </div>
   );
 }
