@@ -65,6 +65,7 @@ export const other = (player: Player): Player => (player === 'A' ? 'B' : 'A');
 
 // Player A marches left to right, player B right to left.
 const direction = (player: Player) => (player === 'A' ? 1 : -1);
+const homeCol = (player: Player) => (player === 'A' ? 0 : COLUMNS.length - 1);
 const onBoard = (col: number) => col >= 0 && col < COLUMNS.length;
 const targetCol = (piece: Piece, roll: number) => piece.col + direction(piece.player) * roll;
 
@@ -82,9 +83,8 @@ export function canMove(state: GameState, piece: Piece): boolean {
   if (state.roll === null || state.winner || piece.player !== state.turn) return false;
   const col = targetCol(piece, state.roll);
   if (!onBoard(col)) return true; // leaves the board and gets crowned
-  const occupant = state.pieces.find((p) => p.row === piece.row && p.col === col);
-  if (!occupant) return true;
-  return state.mode === 'capture' && occupant.player !== piece.player;
+  // A team can have only one piece per column outside its home column.
+  return !state.pieces.some((p) => p.player === piece.player && p.col === col);
 }
 
 export function legalMoves(state: GameState): Piece[] {
@@ -114,10 +114,15 @@ export function movePiece(state: GameState, pieceId: string): GameState {
 
   if (onBoard(col)) {
     to = COLUMNS[col];
-    const occupant = pieces.find((p) => p.row === piece.row && p.col === col);
-    if (occupant) {
-      pieces = pieces.filter((p) => p !== occupant);
+    // Moving into a column held by an enemy captures it, whatever its row. Home columns are safe.
+    const enemy =
+      col !== homeCol(other(piece.player)) &&
+      pieces.find((p) => p.player !== piece.player && p.col === col);
+    if (enemy) {
+      pieces = pieces.filter((p) => p !== enemy);
       captured[piece.player]++;
+      // In the race the captured piece starts over; in capture mode it is out of the game.
+      if (state.mode === 'race') pieces.push({ ...enemy, col: homeCol(enemy.player) });
       to += '×';
     }
     pieces.push({ ...piece, col });
@@ -131,21 +136,25 @@ export function movePiece(state: GameState, pieceId: string): GameState {
     pieces,
     crowned,
     captured,
-    winner: findWinner(pieces, crowned, captured),
+    winner: findWinner(state.mode, pieces, crowned, captured),
     moves: [...state.moves, { player: piece.player, label: `${roll}-${COLUMNS[piece.col]},${to}` }],
   });
 }
 
-// The game ends once either side has no pieces left on the board; crowns and captures both score.
+// Race: first to crown all five pieces. Capture: first to capture all five enemy pieces.
 function findWinner(
+  mode: Mode,
   pieces: Piece[],
   crowned: Record<Player, number>,
   captured: Record<Player, number>,
 ): GameState['winner'] {
-  const hasPieces = (player: Player) => pieces.some((p) => p.player === player);
-  if (hasPieces('A') && hasPieces('B')) return null;
-  const a = crowned.A + captured.A;
-  const b = crowned.B + captured.B;
-  if (a === b) return 'draw';
-  return a > b ? 'A' : 'B';
+  const players: Player[] = ['A', 'B'];
+  if (mode === 'race') return players.find((p) => crowned[p] === ROWS) ?? null;
+
+  const winner = players.find((p) => captured[p] === ROWS);
+  if (winner) return winner;
+  // Crowned pieces can't be captured, so the game also ends once a side has nothing left on the board.
+  if (players.every((player) => pieces.some((p) => p.player === player))) return null;
+  if (captured.A === captured.B) return 'draw';
+  return captured.A > captured.B ? 'A' : 'B';
 }

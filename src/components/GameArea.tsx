@@ -1,4 +1,4 @@
-import { COLUMNS, ROWS, canMove, type GameState, type Opponent, type Player } from '../game';
+import { COLUMNS, ROWS, canMove, other, type GameState, type Opponent, type Player } from '../game';
 
 interface Props {
   game: GameState;
@@ -33,17 +33,22 @@ function PlayerHeader({ game, player, opponent }: { game: GameState; player: Pla
   );
 }
 
+// Race mode scores crowned pieces; capture mode scores captured enemy pieces.
 function CrownedBar({ game, player }: { game: GameState; player: Player }) {
-  const score = game.crowned[player] + game.captured[player];
+  const race = game.mode === 'race';
+  const count = race ? game.crowned[player] : game.captured[player];
+  const label = race ? 'Crowned pieces' : 'Captured pieces';
   return (
     <div className={`crowned crowned-${player.toLowerCase()}`}>
-      <span className="crowned-label">
-        Crowned pieces{game.mode === 'capture' ? ` · ${game.captured[player]} captured` : ''}
-      </span>
-      <div className={`crowned-bar bg-${COLOR[player]}`} aria-label={`${score} points`}>
-        {Array.from({ length: game.crowned[player] }, (_, i) => (
-          <span key={i} className="crown-token">♛</span>
-        ))}
+      <span className="crowned-label">{label}</span>
+      <div className={`crowned-bar bg-${COLOR[player]}`} aria-label={`${label}: ${count}`}>
+        {Array.from({ length: count }, (_, i) =>
+          race ? (
+            <span key={i} className="crown-token">♛</span>
+          ) : (
+            <span key={i} className={`captured-token bg-${COLOR[other(player)]}`} />
+          ),
+        )}
       </div>
     </div>
   );
@@ -75,19 +80,23 @@ function Board({ game, opponent, onMove }: { game: GameState; opponent: Opponent
         <div key={letter} className={`column ${col % 2 ? 'column-dark' : 'column-light'}`} role="row">
           <span className="column-label">{letter}</span>
           {Array.from({ length: ROWS }, (_, row) => {
-            const piece = game.pieces.find((p) => p.col === col && p.row === row);
-            const movable = piece && !botTurn && canMove(game, piece);
+            // Home columns are safe, so an enemy can share a cell there with a piece sent back home.
+            const pieces = game.pieces.filter((p) => p.col === col && p.row === row);
             return (
-              <div key={row} className="cell" role="gridcell">
+              <div key={row} className={`cell${pieces.length > 1 ? ' cell-shared' : ''}`} role="gridcell">
                 {col === 0 && <span className="row-label">{row + 1}</span>}
-                {piece && (
-                  <button
-                    className={`piece bg-${COLOR[piece.player]}${movable ? ' piece-movable' : ''}`}
-                    disabled={!movable}
-                    onClick={() => onMove(piece.id)}
-                    aria-label={`Player ${piece.player} piece on ${letter}${row + 1}`}
-                  />
-                )}
+                {pieces.map((piece) => {
+                  const movable = !botTurn && canMove(game, piece);
+                  return (
+                    <button
+                      key={piece.id}
+                      className={`piece bg-${COLOR[piece.player]}${movable ? ' piece-movable' : ''}`}
+                      disabled={!movable}
+                      onClick={() => onMove(piece.id)}
+                      aria-label={`Player ${piece.player} piece on ${letter}${row + 1}`}
+                    />
+                  );
+                })}
               </div>
             );
           })}
