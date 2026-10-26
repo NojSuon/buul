@@ -4,7 +4,8 @@ import type { Profile } from './accountService';
 
 type Service = typeof import('./accountService');
 
-export type AccountStatus = 'loading' | 'signedOut' | 'signedIn';
+// needsNickname: signed in for the first time, and no profile until a nickname is chosen.
+export type AccountStatus = 'loading' | 'signedOut' | 'needsNickname' | 'signedIn';
 
 // Firebase error codes worth explaining to the player; anything else shows a general message.
 export type AccountError = 'unauthorized-domain' | 'popup-blocked' | 'network' | 'other';
@@ -18,6 +19,7 @@ interface Account {
   busy: boolean;
   signIn: () => Promise<void>;
   reloadProfile: () => Promise<void>;
+  createProfile: (nickname: string) => Promise<void>;
   signOut: () => Promise<void>;
   rename: (nickname: string) => Promise<void>;
   deleteAccount: () => Promise<void>;
@@ -65,11 +67,13 @@ export function AccountProvider({ children }: { children: ReactNode }) {
           return;
         }
         try {
-          setProfile(await s.loadProfile(nextUid));
+          const loaded = await s.loadProfile(nextUid);
+          setProfile(loaded);
+          setStatus(loaded ? 'signedIn' : 'needsNickname');
         } catch (e) {
           fail(e);
+          setStatus('signedIn');
         }
-        setStatus('signedIn');
       });
     });
     return () => {
@@ -101,7 +105,14 @@ export function AccountProvider({ children }: { children: ReactNode }) {
     signIn: () => run((s) => s.signInWithGoogle()),
     reloadProfile: () =>
       run(async (s) => {
-        setProfile(await s.loadProfile(uid!));
+        const loaded = await s.loadProfile(uid!);
+        setProfile(loaded);
+        setStatus(loaded ? 'signedIn' : 'needsNickname');
+      }),
+    createProfile: (nickname) =>
+      run(async (s) => {
+        setProfile(await s.createProfile(uid!, nickname));
+        setStatus('signedIn');
       }),
     signOut: () => run((s) => s.signOutUser()),
     rename: (nickname) =>

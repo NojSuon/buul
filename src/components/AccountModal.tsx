@@ -1,31 +1,90 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { useAccount } from '../account';
 import { MODES } from '../game';
 import { useStrings } from '../i18n';
+import { NICKNAME_MAX, nicknameProblem, suggestNickname } from '../nickname';
 import Modal from './Modal';
 
-const NICKNAME_MIN = 2;
-const NICKNAME_MAX = 20;
+interface NicknameFormProps {
+  initial: string;
+  submitLabel: string;
+  // Offer a dice button that suggests a nickname (used when creating one).
+  suggest?: boolean;
+  onSubmit: (nickname: string) => Promise<void>;
+}
 
-export default function AccountModal({ onClose, onOpenPrivacy }: { onClose: () => void; onOpenPrivacy: () => void }) {
+// A nickname box that explains what's wrong as the player types (too short, odd characters,
+// offensive words) and only lets valid nicknames through.
+function NicknameForm({ initial, submitLabel, suggest, onSubmit }: NicknameFormProps) {
   const t = useStrings().account;
   const account = useAccount();
-  const [nickname, setNickname] = useState(account.profile?.nickname ?? '');
+  const [nickname, setNickname] = useState(initial);
   const [saved, setSaved] = useState(false);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
-  useEffect(() => setNickname(account.profile?.nickname ?? ''), [account.profile?.nickname]);
+  useEffect(() => setNickname(initial), [initial]);
 
   const trimmed = nickname.trim();
-  const nicknameValid = trimmed.length >= NICKNAME_MIN && trimmed.length <= NICKNAME_MAX;
+  const problem = nicknameProblem(trimmed);
+  const unchanged = trimmed === initial;
 
-  const saveNickname = async () => {
-    await account.rename(trimmed);
+  const submit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (problem || account.busy) return;
+    await onSubmit(trimmed);
     setSaved(true);
   };
 
   return (
-    <Modal title={t.title} onClose={onClose} className="modal-account">
+    <form className="account-field" onSubmit={submit}>
+      <label className="account-label" htmlFor="nickname">
+        {t.nickname}
+      </label>
+      <span className="account-row">
+        <input
+          id="nickname"
+          value={nickname}
+          maxLength={NICKNAME_MAX}
+          autoComplete="off"
+          spellCheck={false}
+          aria-invalid={problem !== null && !unchanged}
+          aria-describedby="nickname-hint"
+          onChange={(e) => {
+            setNickname(e.target.value);
+            setSaved(false);
+          }}
+        />
+        {suggest && (
+          <button
+            type="button"
+            className="pill-button dice-button"
+            onClick={() => setNickname(suggestNickname())}
+            title={t.suggest}
+            aria-label={t.suggest}
+          >
+            🎲
+          </button>
+        )}
+        <button type="submit" className="pill-button account-save" disabled={!!problem || (unchanged && !suggest) || account.busy}>
+          {saved && unchanged ? t.saved : submitLabel}
+        </button>
+      </span>
+      <span id="nickname-hint" className={problem && !unchanged ? 'nickname-problem' : 'settings-hint'}>
+        {problem && !unchanged ? t.nicknameProblems[problem] : t.nicknameHint}
+      </span>
+    </form>
+  );
+}
+
+export default function AccountModal({ onClose, onOpenPrivacy }: { onClose: () => void; onOpenPrivacy: () => void }) {
+  const t = useStrings().account;
+  const account = useAccount();
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [suggestion] = useState(suggestNickname);
+
+  const title = account.status === 'needsNickname' ? t.createTitle : t.title;
+
+  return (
+    <Modal title={title} onClose={onClose} className="modal-account">
       <div className="modal-body account-body">
         {account.status === 'loading' && <p>{t.loading}</p>}
 
@@ -40,29 +99,19 @@ export default function AccountModal({ onClose, onOpenPrivacy }: { onClose: () =
           </>
         )}
 
+        {account.status === 'needsNickname' && (
+          <>
+            <p>{t.createIntro}</p>
+            <NicknameForm initial={suggestion} submitLabel={t.create} suggest onSubmit={account.createProfile} />
+            <button className="link-button" onClick={account.signOut} disabled={account.busy}>
+              {t.signOut}
+            </button>
+          </>
+        )}
+
         {account.status === 'signedIn' && account.profile && (
           <>
-            <label className="account-field">
-              <span className="account-label">{t.nickname}</span>
-              <span className="account-row">
-                <input
-                  value={nickname}
-                  maxLength={NICKNAME_MAX}
-                  onChange={(e) => {
-                    setNickname(e.target.value);
-                    setSaved(false);
-                  }}
-                />
-                <button
-                  className="pill-button account-save"
-                  onClick={saveNickname}
-                  disabled={!nicknameValid || trimmed === account.profile.nickname || account.busy}
-                >
-                  {saved ? t.saved : t.save}
-                </button>
-              </span>
-              <span className="settings-hint">{t.nicknameHint}</span>
-            </label>
+            <NicknameForm initial={account.profile.nickname} submitLabel={t.save} onSubmit={account.rename} />
 
             <div>
               <h3>{t.stats}</h3>

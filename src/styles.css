@@ -963,8 +963,25 @@ button:focus-visible {
   border: 2px solid var(--navy);
 }
 
-.account-save {
+.account-save,
+.dice-button {
   flex: 0 0 auto !important;
+}
+
+.dice-button {
+  padding: 6px 12px;
+  font-size: 18px;
+}
+
+.nickname-problem {
+  color: #c0392b;
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.account-row input[aria-invalid='true'] {
+  border-color: #c0392b;
 }
 
 .pill-button:disabled {

@@ -35,16 +35,19 @@ export async function signInWithGoogle() {
 
 export const signOutUser = () => signOut(auth);
 
-// Loads the player's profile. On the first sign-in it creates one with a random nickname, so we
-// never copy the player's real name from their Google account.
-export async function loadProfile(uid: string): Promise<Profile> {
+// Loads the player's profile, or null on their first sign-in, before they've chosen a nickname.
+export async function loadProfile(uid: string): Promise<Profile | null> {
   const snap = await getDoc(userDoc(uid));
-  if (snap.exists()) {
-    const data = snap.data();
-    return { nickname: data.nickname, stats: data.stats };
-  }
+  if (!snap.exists()) return null;
+  const data = snap.data();
+  return { nickname: data.nickname, stats: data.stats };
+}
+
+// Creates the profile with the nickname the player chose, so we never copy their real name from
+// their Google account.
+export async function createProfile(uid: string, nickname: string): Promise<Profile> {
   const profile: Profile = {
-    nickname: `Player${Math.floor(1000 + Math.random() * 9000)}`,
+    nickname,
     stats: { race: { played: 0, won: 0 }, capture: { played: 0, won: 0 } },
   };
   await setDoc(userDoc(uid), { ...profile, createdAt: serverTimestamp() });
