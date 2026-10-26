@@ -82,7 +82,7 @@ export function diceValue(dice: boolean[]): number {
 export function canMove(state: GameState, piece: Piece): boolean {
   if (state.roll === null || state.winner || piece.player !== state.turn) return false;
   const col = targetCol(piece, state.roll);
-  if (!onBoard(col)) return true; // runs off the end: crowned, or back to base in capture mode
+  if (!onBoard(col)) return true; // overshoots the end and goes back to base
   // A team can have only one piece per column outside its home column.
   return !state.pieces.some((p) => p.player === piece.player && p.col === col);
 }
@@ -112,7 +112,16 @@ export function movePiece(state: GameState, pieceId: string): GameState {
   let pieces = state.pieces.filter((p) => p.id !== piece.id);
   let to: string;
 
-  if (onBoard(col)) {
+  if (state.mode === 'race' && col === homeCol(other(piece.player))) {
+    // In the race a piece is crowned only by landing exactly on the last column.
+    crowned[piece.player]++;
+    to = '♛';
+  } else if (!onBoard(col)) {
+    // Overshooting the end sends the piece back to base to play again.
+    const home = homeCol(piece.player);
+    pieces.push({ ...piece, col: home });
+    to = COLUMNS[home];
+  } else {
     to = COLUMNS[col];
     // Moving into a column held by an enemy captures it, whatever its row. Home columns are safe.
     const enemy =
@@ -126,14 +135,6 @@ export function movePiece(state: GameState, pieceId: string): GameState {
       to += '×';
     }
     pieces.push({ ...piece, col });
-  } else if (state.mode === 'race') {
-    crowned[piece.player]++;
-    to = '♛';
-  } else {
-    // In capture mode a piece that runs off the end goes back to base to play again.
-    const home = homeCol(piece.player);
-    pieces.push({ ...piece, col: home });
-    to = COLUMNS[home];
   }
 
   return endTurn({

@@ -28,9 +28,10 @@ const CONTENT: Record<ModalKind, { title: string; body: ReactNode }> = {
         </p>
         <h3>Game modes</h3>
         <p>
-          <strong>Ixi’im Beel</strong> (maize race): a piece that runs past the far edge is crowned
-          and leaves the board, and a captured piece goes back to its start. The first to crown all
-          five pieces wins.
+          <strong>Ixi’im Beel</strong> (maize race): a piece is crowned only when it lands exactly
+          on the last column, and it moves to your crowned pieces. If the roll takes it past the
+          end, it goes back to its start; for example, a piece on column I needs exactly 2. A
+          captured piece also goes back to its start. The first to crown all five pieces wins.
         </p>
         <p>
           <strong>Noj Ba’atel</strong> (capture mode): a piece that runs past the far edge goes back
