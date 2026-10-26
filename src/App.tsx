@@ -12,6 +12,7 @@ import { BOTS, chooseMove, randomBot, type Bot } from './bots';
 import { LanguageProvider, type Lang } from './i18n';
 import LeftSidebar from './components/LeftSidebar';
 import MobileBar from './components/MobileBar';
+import DebugInfo from './components/DebugInfo';
 import GameArea from './components/GameArea';
 import MoveHistory from './components/MoveHistory';
 import InfoModal from './components/InfoModal';
@@ -203,8 +204,11 @@ export default function App() {
     </>
   );
 
+  const debug = new URLSearchParams(window.location.search).has('debug');
+
   return (
     <LanguageProvider lang={lang}>
+      {debug && <DebugInfo mobile={mobile} />}
       {mobile ? (
         <div className="app app-mobile">
           <MobileBar onMenu={() => setMenuOpen(true)} />

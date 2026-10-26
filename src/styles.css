@@ -1036,6 +1036,22 @@ button:focus-visible {
   color: var(--paper);
 }
 
+.debug-info {
+  position: fixed;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  z-index: 20;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.85);
+  color: #fff;
+  font-family: system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
 /* ---------- Phone layout ---------- */
 
 /* A vertical page that scrolls: top bar, opponent, board, you, then the move list. */
