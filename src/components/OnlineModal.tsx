@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useAccount } from '../account';
+import type { PieceColor } from '../colors';
 import { MODES, type Mode } from '../game';
 import { useStrings } from '../i18n';
 import { suggestNickname } from '../nickname';
@@ -14,6 +15,8 @@ type Problem = OnlineError | 'bad-code';
 interface Props {
   intent: OnlineIntent;
   online: ReturnType<typeof useOnlineGame>;
+  // Your piece colour, shared with your friend.
+  color: PieceColor;
   onClose: () => void;
   onOpenAccount: () => void;
   onCancelGame: () => void;
@@ -38,7 +41,7 @@ function storeGuestName(name: string) {
   }
 }
 
-export default function OnlineModal({ intent, online, onClose, onOpenAccount, onCancelGame }: Props) {
+export default function OnlineModal({ intent, online, color, onClose, onOpenAccount, onCancelGame }: Props) {
   const t = useStrings();
   const o = t.online;
   const account = useAccount();
@@ -67,10 +70,11 @@ export default function OnlineModal({ intent, online, onClose, onOpenAccount, on
       const uid = account.uid ?? (await account.signInAsGuest());
       if (account.status !== 'signedIn') storeGuestName(nickname);
       if (online.session) await online.leave();
+      const player = { uid, nickname, color };
       if (intent.kind === 'create') {
-        await online.create(intent.mode, uid, nickname);
+        await online.create(intent.mode, player);
       } else {
-        const result = await online.join(digits, uid, nickname);
+        const result = await online.join(digits, player);
         if ('error' in result) setProblem(result.error);
       }
     } catch (e) {

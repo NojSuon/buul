@@ -21,6 +21,7 @@ import AccountModal from './components/AccountModal';
 import PrivacyModal from './components/PrivacyModal';
 import OnlineModal, { type OnlineIntent } from './components/OnlineModal';
 import { useAccount } from './account';
+import { PIECE_COLOR_IDS, colorVariables, resolveColors, type PieceColor } from './colors';
 import { formatCode, useOnlineGame } from './online';
 import LearnModal from './components/LearnModal';
 import SettingsModal, { type BotChoice, type SoundSetting } from './components/SettingsModal';
@@ -123,6 +124,7 @@ export default function App() {
     ...BOTS.map((b) => b.id),
   ]);
   const [sound, setSound] = useStoredSetting<SoundSetting>('buul.sound', 'on', ['on', 'off']);
+  const [myColor, setMyColor] = useStoredSetting<PieceColor>('buul.color', 'turquoise', PIECE_COLOR_IDS);
   const [bot, setBot] = useState(() => pickBot(botChoice));
   const [localGame, dispatch] = useReducer(reducer, 'race', newGame);
   const [gameId, setGameId] = useState(makeGameId);
@@ -153,6 +155,11 @@ export default function App() {
         A: { kind: 'me', name: account.profile?.nickname },
         B: { kind: 'bot', name: bot.name, bot },
       };
+
+  // Against a bot you play A and the bot keeps orange unless you picked it.
+  const colors = inOnline && mySide
+    ? resolveColors(myColor, mySide, onlineGame?.players[mySide === 'A' ? 'B' : 'A']?.color)
+    : resolveColors(myColor, 'A', undefined);
 
   useTurnSounds(game, seats, sound === 'on');
 
@@ -279,8 +286,10 @@ export default function App() {
           lang={lang}
           botChoice={botChoice}
           sound={sound}
+          color={myColor}
           onLangChange={setLang}
           onSoundChange={setSound}
+          onColorChange={setMyColor}
           onBotChoiceChange={changeBotChoice}
           onClose={closeModal}
         />
@@ -292,6 +301,7 @@ export default function App() {
         <OnlineModal
           intent={onlineIntent}
           online={online}
+          color={myColor}
           onClose={closeModal}
           onOpenAccount={() => setModal('account')}
           onCancelGame={() => {
@@ -309,7 +319,7 @@ export default function App() {
     <LanguageProvider lang={lang}>
       {debug && <DebugInfo mobile={mobile} />}
       {mobile ? (
-        <div className="app app-mobile">
+        <div className="app app-mobile" style={colorVariables(colors)}>
           <MobileBar onMenu={() => setMenuOpen(true)} />
           {content}
           {menuOpen && (
@@ -324,6 +334,7 @@ export default function App() {
         <div
           className="app"
           style={{
+            ...colorVariables(colors),
             width: STAGE_WIDTH,
             height: STAGE_HEIGHT,
             transform: `translate(-50%, -50%) scale(${scale})`,

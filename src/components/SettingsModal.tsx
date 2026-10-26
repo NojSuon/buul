@@ -1,4 +1,5 @@
 import { BOTS } from '../bots';
+import { PIECE_COLORS, type PieceColor } from '../colors';
 import { LANGUAGES, useStrings, type Lang } from '../i18n';
 import Modal from './Modal';
 
@@ -9,7 +10,9 @@ interface Props {
   lang: Lang;
   botChoice: BotChoice;
   sound: SoundSetting;
+  color: PieceColor;
   onLangChange: (lang: Lang) => void;
+  onColorChange: (color: PieceColor) => void;
   onBotChoiceChange: (choice: BotChoice) => void;
   onSoundChange: (sound: SoundSetting) => void;
   onClose: () => void;
@@ -19,7 +22,9 @@ export default function SettingsModal({
   lang,
   botChoice,
   sound,
+  color,
   onLangChange,
+  onColorChange,
   onBotChoiceChange,
   onSoundChange,
   onClose,
@@ -62,6 +67,27 @@ export default function SettingsModal({
             >
               {o.label}
             </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="settings-section">
+        <h3>
+          {t.settingsPanel.color}: {t.settingsPanel.colors[color]}
+        </h3>
+        <p className="settings-hint">{t.settingsPanel.colorHint}</p>
+        <div className="color-grid" role="radiogroup" aria-label={t.settingsPanel.color}>
+          {PIECE_COLORS.map((c) => (
+            <button
+              key={c.id}
+              role="radio"
+              aria-checked={color === c.id}
+              aria-label={t.settingsPanel.colors[c.id]}
+              title={t.settingsPanel.colors[c.id]}
+              className={`color-option${color === c.id ? ' color-option-active' : ''}`}
+              style={{ background: c.hex }}
+              onClick={() => onColorChange(c.id)}
+            />
           ))}
         </div>
       </section>

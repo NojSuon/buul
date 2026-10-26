@@ -31,7 +31,8 @@ interface Props {
   onPlayAgain: () => void;
 }
 
-const COLOR: Record<Player, string> = { A: 'teal', B: 'orange' };
+// Class suffixes for each side's colour; the colours themselves are CSS variables (see colors.ts).
+const COLOR: Record<Player, string> = { A: 'a', B: 'b' };
 const TARGET_ICON = { move: '', capture: '✕', crown: '♛', base: '↺' };
 
 function statusText(t: Strings, game: GameState, player: Player, seats: Record<Player, Seat>, locked: boolean, selected: boolean): string {

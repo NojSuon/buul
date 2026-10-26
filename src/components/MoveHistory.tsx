@@ -45,7 +45,7 @@ export default function MoveHistory({ gameId, moves, onlineCode, onLeave }: Prop
       <ol className="history" ref={listRef}>
         {moves.length === 0 && <li className="history-empty">{t.noMoves}</li>}
         {moves.map((move, i) => (
-          <li key={i} className={`history-item bg-${move.player === 'A' ? 'teal' : 'orange'}`}>
+          <li key={i} className={`history-item bg-${move.player.toLowerCase()}`}>
             {move.label.replace('pass', t.pass)}
           </li>
         ))}

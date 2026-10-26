@@ -22,6 +22,8 @@ import { newGame, type GameState, type Mode, type Player } from './game';
 export interface OnlinePlayer {
   uid: string;
   nickname: string;
+  // Their piece colour (a PieceColor id). Checked when shown, since anyone could write anything.
+  color?: string;
 }
 
 export interface OnlineGame {

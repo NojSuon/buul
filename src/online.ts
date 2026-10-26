@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { GameState, Mode, Player } from './game';
-import type { JoinResult, OnlineGame } from './onlineService';
+import type { JoinResult, OnlineGame, OnlinePlayer } from './onlineService';
 
 type Service = typeof import('./onlineService');
 
@@ -89,15 +89,15 @@ export function useOnlineGame(uid: string | null) {
     };
   }, [session?.code, uid]);
 
-  const create = async (mode: Mode, playerUid: string, nickname: string) => {
+  const create = async (mode: Mode, player: OnlinePlayer) => {
     const s = await getService();
-    const code = await s.createGame(mode, { uid: playerUid, nickname });
+    const code = await s.createGame(mode, player);
     changeSession({ code, side: 'A' });
   };
 
-  const join = async (code: string, playerUid: string, nickname: string): Promise<JoinResult> => {
+  const join = async (code: string, player: OnlinePlayer): Promise<JoinResult> => {
     const s = await getService();
-    const result = await s.joinGame(code, { uid: playerUid, nickname });
+    const result = await s.joinGame(code, player);
     if ('side' in result) changeSession({ code, side: result.side });
     return result;
   };

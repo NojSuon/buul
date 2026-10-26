@@ -4,6 +4,11 @@
   --white: #ffffff;
   --teal: #0a8aa8;
   --orange: #f39200;
+  /* Each side's piece colour; the app sets these from the players' picks (see colors.ts). */
+  --color-a: var(--teal);
+  --ink-a: var(--white);
+  --color-b: var(--orange);
+  --ink-b: var(--white);
   --column-light: #eef3ee;
   --column-dark: #d9dfd9;
   --radius: 12px;
@@ -53,12 +58,14 @@ p {
 
 /* ---------- Shared ---------- */
 
-.bg-teal {
-  background: var(--teal);
+.bg-a {
+  background: var(--color-a);
+  color: var(--ink-a);
 }
 
-.bg-orange {
-  background: var(--orange);
+.bg-b {
+  background: var(--color-b);
+  color: var(--ink-b);
 }
 
 .rule {
@@ -241,7 +248,6 @@ button:focus-visible {
   margin: 0 1px;
   padding: 1px 0;
   border-radius: 6px;
-  color: var(--navy);
   font-size: 12px;
   text-align: center;
 }
@@ -315,12 +321,12 @@ button:focus-visible {
   border-radius: 10px;
 }
 
-.swatch-teal {
-  background: var(--teal);
+.swatch-a {
+  background: var(--color-a);
 }
 
-.swatch-orange {
-  background: var(--orange);
+.swatch-b {
+  background: var(--color-b);
 }
 
 .crowned {
@@ -351,7 +357,6 @@ button:focus-visible {
   height: 42px;
   padding: 0 12px;
   border-radius: var(--radius);
-  color: var(--white);
   font-size: 22px;
 }
 
@@ -367,7 +372,6 @@ button:focus-visible {
   padding: 6px 14px;
   border: 0;
   border-radius: var(--radius);
-  color: var(--white);
   font-size: 16px;
   text-transform: uppercase;
   cursor: pointer;
@@ -392,20 +396,29 @@ button:focus-visible {
   background: var(--white);
 }
 
+.die-a {
+  border-color: var(--color-a);
+}
+
+.die-b {
+  border-color: var(--color-b);
+}
+
+.die-marked.die-a {
+  background: var(--color-a);
+}
+
+.die-marked.die-b {
+  background: var(--color-b);
+}
+
+/* The Learn diagrams always show the default colours. */
 .die-teal {
   border-color: var(--teal);
 }
 
-.die-orange {
-  border-color: var(--orange);
-}
-
 .die-marked.die-teal {
   background: var(--teal);
-}
-
-.die-marked.die-orange {
-  background: var(--orange);
 }
 
 /* ---------- Board ---------- */
@@ -527,14 +540,14 @@ button:focus-visible {
   animation: target-blink 1s ease-in-out infinite;
 }
 
-.target-teal {
-  border-color: var(--teal);
-  color: var(--teal);
+.target-a {
+  border-color: var(--color-a);
+  color: var(--color-a);
 }
 
-.target-orange {
-  border-color: var(--orange);
-  color: var(--orange);
+.target-b {
+  border-color: var(--color-b);
+  color: var(--color-b);
 }
 
 .target-capture {
@@ -584,12 +597,12 @@ button:focus-visible {
   animation: victory-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1);
 }
 
-.victory-teal {
-  --accent: var(--teal);
+.victory-a {
+  --accent: var(--color-a);
 }
 
-.victory-orange {
-  --accent: var(--orange);
+.victory-b {
+  --accent: var(--color-b);
 }
 
 .victory-icon {
@@ -682,12 +695,12 @@ button:focus-visible {
   animation: roll-glow 1.3s ease-out infinite;
 }
 
-.roll-button-ready.bg-teal {
-  --glow: rgba(10, 138, 168, 0.65);
+.roll-button-ready.bg-a {
+  --glow: color-mix(in srgb, var(--color-a) 65%, transparent);
 }
 
-.roll-button-ready.bg-orange {
-  --glow: rgba(243, 146, 0, 0.65);
+.roll-button-ready.bg-b {
+  --glow: color-mix(in srgb, var(--color-b) 65%, transparent);
 }
 
 .roll-button-ready:hover {
@@ -833,6 +846,34 @@ button:focus-visible {
   border-color: var(--navy);
   background: var(--paper);
   box-shadow: inset 4px 0 0 var(--orange);
+}
+
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 36px);
+  gap: 10px;
+}
+
+.color-option {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.color-option:hover {
+  transform: scale(1.1);
+}
+
+.color-option-active {
+  box-shadow: 0 0 0 3px var(--white), 0 0 0 6px var(--navy);
+}
+
+.app-mobile .color-grid {
+  grid-template-columns: repeat(5, 36px);
 }
 
 .bot-card-name {
