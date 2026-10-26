@@ -1,0 +1,85 @@
+import { useEffect, useReducer, useState } from 'react';
+import {
+  applyRoll,
+  legalMoves,
+  movePiece,
+  newGame,
+  throwDice,
+  type GameState,
+  type Mode,
+  type Opponent,
+} from './game';
+import LeftSidebar from './components/LeftSidebar';
+import GameArea from './components/GameArea';
+import MoveHistory from './components/MoveHistory';
+import InfoModal, { type ModalKind } from './components/InfoModal';
+
+type Action =
+  | { type: 'roll'; dice: boolean[] }
+  | { type: 'move'; pieceId: string }
+  | { type: 'new'; mode: Mode };
+
+function reducer(state: GameState, action: Action): GameState {
+  switch (action.type) {
+    case 'roll':
+      return applyRoll(state, action.dice);
+    case 'move':
+      return movePiece(state, action.pieceId);
+    case 'new':
+      return newGame(action.mode);
+  }
+}
+
+const makeGameId = () => {
+  const n = Math.floor(Math.random() * 1_000_000).toString().padStart(6, '0');
+  return `${n.slice(0, 3)}-${n.slice(3)}`;
+};
+
+const BOT_DELAY_MS = 700;
+
+export default function App() {
+  const [opponent, setOpponent] = useState<Opponent>('bot');
+  const [game, dispatch] = useReducer(reducer, 'race', newGame);
+  const [gameId, setGameId] = useState(makeGameId);
+  const [modal, setModal] = useState<ModalKind | null>(null);
+
+  // The bot always plays B: roll, then pick one of its legal pieces at random.
+  useEffect(() => {
+    if (opponent !== 'bot' || game.turn !== 'B' || game.winner) return;
+    const timer = setTimeout(() => {
+      if (game.roll === null) {
+        dispatch({ type: 'roll', dice: throwDice() });
+      } else {
+        const options = legalMoves(game);
+        const choice = options[Math.floor(Math.random() * options.length)];
+        if (choice) dispatch({ type: 'move', pieceId: choice.id });
+      }
+    }, BOT_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [opponent, game]);
+
+  const startGame = (nextOpponent: Opponent, mode: Mode) => {
+    setOpponent(nextOpponent);
+    setGameId(makeGameId());
+    dispatch({ type: 'new', mode });
+  };
+
+  return (
+    <div className="app">
+      <LeftSidebar
+        opponent={opponent}
+        mode={game.mode}
+        onStart={startGame}
+        onOpen={setModal}
+      />
+      <GameArea
+        game={game}
+        opponent={opponent}
+        onRoll={() => dispatch({ type: 'roll', dice: throwDice() })}
+        onMove={(pieceId) => dispatch({ type: 'move', pieceId })}
+      />
+      <MoveHistory gameId={gameId} moves={game.moves} />
+      {modal && <InfoModal kind={modal} onClose={() => setModal(null)} />}
+    </div>
+  );
+}
