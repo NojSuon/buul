@@ -80,7 +80,6 @@ function Board({ game, opponent, onMove }: { game: GameState; opponent: Opponent
         <div key={letter} className={`column ${col % 2 ? 'column-dark' : 'column-light'}`} role="row">
           <span className="column-label">{letter}</span>
           {Array.from({ length: ROWS }, (_, row) => {
-            // Home columns are safe, so an enemy can share a cell there with a piece sent back home.
             const pieces = game.pieces.filter((p) => p.col === col && p.row === row);
             return (
               <div key={row} className={`cell${pieces.length > 1 ? ' cell-shared' : ''}`} role="gridcell">

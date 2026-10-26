@@ -82,7 +82,8 @@ export function diceValue(dice: boolean[]): number {
 export function canMove(state: GameState, piece: Piece): boolean {
   if (state.roll === null || state.winner || piece.player !== state.turn) return false;
   const col = targetCol(piece, state.roll);
-  if (!onBoard(col)) return true; // overshoots the end and goes back to base
+  // Reaching or overshooting the end crowns the piece or sends it back to base.
+  if (!onBoard(col) || col === homeCol(other(piece.player))) return true;
   // A team can have only one piece per column outside its home column.
   return !state.pieces.some((p) => p.player === piece.player && p.col === col);
 }
@@ -112,21 +113,22 @@ export function movePiece(state: GameState, pieceId: string): GameState {
   let pieces = state.pieces.filter((p) => p.id !== piece.id);
   let to: string;
 
-  if (state.mode === 'race' && col === homeCol(other(piece.player))) {
+  const lastCol = homeCol(other(piece.player));
+
+  if (state.mode === 'race' && col === lastCol) {
     // In the race a piece is crowned only by landing exactly on the last column.
     crowned[piece.player]++;
     to = '♛';
-  } else if (!onBoard(col)) {
-    // Overshooting the end sends the piece back to base to play again.
+  } else if (!onBoard(col) || col === lastCol) {
+    // Overshooting the end (or, in capture mode, reaching it) sends the piece back to base.
     const home = homeCol(piece.player);
     pieces.push({ ...piece, col: home });
     to = COLUMNS[home];
   } else {
     to = COLUMNS[col];
-    // Moving into a column held by an enemy captures it, whatever its row. Home columns are safe.
-    const enemy =
-      col !== homeCol(other(piece.player)) &&
-      pieces.find((p) => p.player !== piece.player && p.col === col);
+    // Moving into a column held by an enemy captures it, whatever its row. Nobody ever lands
+    // in the enemy's home column, so pieces waiting at home are safe.
+    const enemy = pieces.find((p) => p.player !== piece.player && p.col === col);
     if (enemy) {
       pieces = pieces.filter((p) => p !== enemy);
       captured[piece.player]++;

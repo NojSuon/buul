@@ -34,8 +34,9 @@ const CONTENT: Record<ModalKind, { title: string; body: ReactNode }> = {
           captured piece also goes back to its start. The first to crown all five pieces wins.
         </p>
         <p>
-          <strong>Noj Ba’atel</strong> (capture mode): a piece that runs past the far edge goes back
-          to its base and keeps playing, and a captured piece is out of the game. The first to
+          <strong>Noj Ba’atel</strong> (capture mode): a piece that reaches the last column or
+          runs past it goes back to its base and keeps playing, and a captured piece is out of the
+          game. The first to
           capture all five enemy pieces wins.
         </p>
       </>
