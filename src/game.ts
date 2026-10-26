@@ -82,7 +82,7 @@ export function diceValue(dice: boolean[]): number {
 export function canMove(state: GameState, piece: Piece): boolean {
   if (state.roll === null || state.winner || piece.player !== state.turn) return false;
   const col = targetCol(piece, state.roll);
-  if (!onBoard(col)) return true; // leaves the board and gets crowned
+  if (!onBoard(col)) return true; // runs off the end: crowned, or back to base in capture mode
   // A team can have only one piece per column outside its home column.
   return !state.pieces.some((p) => p.player === piece.player && p.col === col);
 }
@@ -126,9 +126,14 @@ export function movePiece(state: GameState, pieceId: string): GameState {
       to += '×';
     }
     pieces.push({ ...piece, col });
-  } else {
+  } else if (state.mode === 'race') {
     crowned[piece.player]++;
     to = '♛';
+  } else {
+    // In capture mode a piece that runs off the end goes back to base to play again.
+    const home = homeCol(piece.player);
+    pieces.push({ ...piece, col: home });
+    to = COLUMNS[home];
   }
 
   return endTurn({
@@ -136,7 +141,7 @@ export function movePiece(state: GameState, pieceId: string): GameState {
     pieces,
     crowned,
     captured,
-    winner: findWinner(state.mode, pieces, crowned, captured),
+    winner: findWinner(state.mode, crowned, captured),
     moves: [...state.moves, { player: piece.player, label: `${roll}-${COLUMNS[piece.col]},${to}` }],
   });
 }
@@ -144,17 +149,10 @@ export function movePiece(state: GameState, pieceId: string): GameState {
 // Race: first to crown all five pieces. Capture: first to capture all five enemy pieces.
 function findWinner(
   mode: Mode,
-  pieces: Piece[],
   crowned: Record<Player, number>,
   captured: Record<Player, number>,
 ): GameState['winner'] {
   const players: Player[] = ['A', 'B'];
-  if (mode === 'race') return players.find((p) => crowned[p] === ROWS) ?? null;
-
-  const winner = players.find((p) => captured[p] === ROWS);
-  if (winner) return winner;
-  // Crowned pieces can't be captured, so the game also ends once a side has nothing left on the board.
-  if (players.every((player) => pieces.some((p) => p.player === player))) return null;
-  if (captured.A === captured.B) return 'draw';
-  return captured.A > captured.B ? 'A' : 'B';
+  const score = mode === 'race' ? crowned : captured;
+  return players.find((p) => score[p] === ROWS) ?? null;
 }

@@ -19,8 +19,7 @@ const CONTENT: Record<ModalKind, { title: string; body: ReactNode }> = {
         <h3>Moving</h3>
         <p>
           After rolling, click one of your highlighted pieces. Each team can have only one piece per
-          column, apart from the home columns A and K where pieces start. A piece that runs past the
-          far edge is crowned and leaves the board.
+          column, apart from the home columns A and K where pieces start.
         </p>
         <h3>Capturing</h3>
         <p>
@@ -29,12 +28,14 @@ const CONTENT: Record<ModalKind, { title: string; body: ReactNode }> = {
         </p>
         <h3>Game modes</h3>
         <p>
-          <strong>Ixi’im Beel</strong> (maize race): a captured piece goes back to its start. The
-          first to crown all five pieces wins.
+          <strong>Ixi’im Beel</strong> (maize race): a piece that runs past the far edge is crowned
+          and leaves the board, and a captured piece goes back to its start. The first to crown all
+          five pieces wins.
         </p>
         <p>
-          <strong>Noj Ba’atel</strong> (capture mode): a captured piece is out of the game. The
-          first to capture all five enemy pieces wins.
+          <strong>Noj Ba’atel</strong> (capture mode): a piece that runs past the far edge goes back
+          to its base and keeps playing, and a captured piece is out of the game. The first to
+          capture all five enemy pieces wins.
         </p>
       </>
     ),
