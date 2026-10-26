@@ -94,42 +94,57 @@ export function applyRoll(state: GameState, dice: boolean[]): GameState {
   return endTurn({ ...next, moves: [...next.moves, { player: state.turn, label: `${roll}-pass` }] });
 }
 
-export function movePiece(state: GameState, pieceId: string): GameState {
-  const piece = state.pieces.find((p) => p.id === pieceId);
-  if (!piece || !canMove(state, piece)) return state;
+// Where a piece would end up with the current roll. `col` is the column it lands on (the last column
+// when it is crowned, its own home column when it goes back to base).
+export interface MovePreview {
+  kind: 'move' | 'capture' | 'crown' | 'base';
+  col: number;
+  capturedId?: string;
+}
 
-  const roll = state.roll!;
-  const col = targetCol(piece, roll);
+export function previewMove(state: GameState, pieceId: string): MovePreview | null {
+  const piece = state.pieces.find((p) => p.id === pieceId);
+  if (!piece || !canMove(state, piece)) return null;
+
+  const col = targetCol(piece, state.roll!);
+  const lastCol = homeCol(other(piece.player));
+
+  // In the race a piece is crowned only by landing exactly on the last column.
+  if (state.mode === 'race' && col === lastCol) return { kind: 'crown', col: lastCol };
+  // Overshooting the end (or, in capture mode, reaching it) sends the piece back to base.
+  if (!onBoard(col) || col === lastCol) return { kind: 'base', col: homeCol(piece.player) };
+  // Moving into a column held by an enemy captures it, whatever its row. Nobody ever lands
+  // in the enemy's home column, so pieces waiting at home are safe.
+  const enemy = state.pieces.find((p) => p.player !== piece.player && p.col === col);
+  return enemy ? { kind: 'capture', col, capturedId: enemy.id } : { kind: 'move', col };
+}
+
+export function movePiece(state: GameState, pieceId: string): GameState {
+  const preview = previewMove(state, pieceId);
+  if (!preview) return state;
+
+  const piece = state.pieces.find((p) => p.id === pieceId)!;
   const crowned = { ...state.crowned };
   const captured = { ...state.captured };
   let pieces = state.pieces.filter((p) => p.id !== piece.id);
-  let to: string;
+  let to = COLUMNS[preview.col];
 
-  const lastCol = homeCol(other(piece.player));
-
-  if (state.mode === 'race' && col === lastCol) {
-    // In the race a piece is crowned only by landing exactly on the last column.
+  if (preview.kind === 'crown') {
     crowned[piece.player]++;
     to = '♛';
-  } else if (!onBoard(col) || col === lastCol) {
-    // Overshooting the end (or, in capture mode, reaching it) sends the piece back to base.
-    const home = homeCol(piece.player);
-    pieces.push({ ...piece, col: home });
-    to = COLUMNS[home];
   } else {
-    to = COLUMNS[col];
-    // Moving into a column held by an enemy captures it, whatever its row. Nobody ever lands
-    // in the enemy's home column, so pieces waiting at home are safe.
-    const enemy = pieces.find((p) => p.player !== piece.player && p.col === col);
-    if (enemy) {
+    if (preview.kind === 'capture') {
+      const enemy = pieces.find((p) => p.id === preview.capturedId)!;
       pieces = pieces.filter((p) => p !== enemy);
       captured[piece.player]++;
       // In the race the captured piece starts over; in capture mode it is out of the game.
       if (state.mode === 'race') pieces.push({ ...enemy, col: homeCol(enemy.player) });
       to += '×';
     }
-    pieces.push({ ...piece, col });
+    pieces.push({ ...piece, col: preview.col });
   }
+
+  const roll = state.roll!;
 
   return endTurn({
     ...state,

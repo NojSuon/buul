@@ -3,17 +3,32 @@ import { LANGUAGES, useStrings, type Lang } from '../i18n';
 import Modal from './Modal';
 
 export type BotChoice = 'random' | string;
+export type SoundSetting = 'on' | 'off';
 
 interface Props {
   lang: Lang;
   botChoice: BotChoice;
+  sound: SoundSetting;
   onLangChange: (lang: Lang) => void;
   onBotChoiceChange: (choice: BotChoice) => void;
+  onSoundChange: (sound: SoundSetting) => void;
   onClose: () => void;
 }
 
-export default function SettingsModal({ lang, botChoice, onLangChange, onBotChoiceChange, onClose }: Props) {
+export default function SettingsModal({
+  lang,
+  botChoice,
+  sound,
+  onLangChange,
+  onBotChoiceChange,
+  onSoundChange,
+  onClose,
+}: Props) {
   const t = useStrings();
+  const soundOptions: { id: SoundSetting; label: string }[] = [
+    { id: 'on', label: t.settingsPanel.soundOn },
+    { id: 'off', label: t.settingsPanel.soundOff },
+  ];
 
   return (
     <Modal title={t.settingsPanel.title} onClose={onClose} className="modal-settings">
@@ -29,6 +44,23 @@ export default function SettingsModal({ lang, botChoice, onLangChange, onBotChoi
               onClick={() => onLangChange(l.id)}
             >
               {l.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="settings-section">
+        <h3>{t.settingsPanel.sound}</h3>
+        <div className="segmented" role="radiogroup" aria-label={t.settingsPanel.sound}>
+          {soundOptions.map((o) => (
+            <button
+              key={o.id}
+              role="radio"
+              aria-checked={sound === o.id}
+              className={`tab${sound === o.id ? ' tab-active' : ''}`}
+              onClick={() => onSoundChange(o.id)}
+            >
+              {o.label}
             </button>
           ))}
         </div>

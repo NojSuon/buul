@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import {
   applyRoll,
   movePiece,
@@ -15,8 +15,10 @@ import GameArea from './components/GameArea';
 import MoveHistory from './components/MoveHistory';
 import InfoModal from './components/InfoModal';
 import LearnModal from './components/LearnModal';
-import SettingsModal, { type BotChoice } from './components/SettingsModal';
+import SettingsModal, { type BotChoice, type SoundSetting } from './components/SettingsModal';
 import type { ModalKind } from './components/Modal';
+import yourTurnSound from './assets/sounds/message-sent.wav';
+import opponentTurnSound from './assets/sounds/message-receive.wav';
 
 type Action =
   | { type: 'roll'; dice: boolean[] }
@@ -81,18 +83,42 @@ function useStoredSetting<T extends string>(key: string, fallback: T, allowed: r
 
 const pickBot = (choice: BotChoice): Bot => BOTS.find((b) => b.id === choice) ?? randomBot();
 
+// Plays "message sent" when the turn passes to player A (you, against a bot) and "message
+// received" when it passes to player B.
+function useTurnSounds(game: GameState, enabled: boolean) {
+  const sounds = useMemo(
+    () => ({ A: new Audio(yourTurnSound), B: new Audio(opponentTurnSound) }),
+    [],
+  );
+  const firstRender = useRef(true);
+
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    if (!enabled || game.winner) return;
+    const sound = sounds[game.turn];
+    sound.currentTime = 0;
+    // Browsers may block sound until the page has been clicked; that's fine to ignore.
+    sound.play().catch(() => {});
+  }, [game.turn]); // only a change of turn plays a sound
+}
+
 export default function App() {
   const [lang, setLang] = useStoredSetting<Lang>('buul.lang', 'en', ['en', 'es']);
   const [botChoice, setBotChoice] = useStoredSetting<BotChoice>('buul.bot', 'random', [
     'random',
     ...BOTS.map((b) => b.id),
   ]);
+  const [sound, setSound] = useStoredSetting<SoundSetting>('buul.sound', 'on', ['on', 'off']);
   const [opponent, setOpponent] = useState<Opponent>('bot');
   const [bot, setBot] = useState(() => pickBot(botChoice));
   const [game, dispatch] = useReducer(reducer, 'race', newGame);
   const [gameId, setGameId] = useState(makeGameId);
   const [modal, setModal] = useState<ModalKind | null>(null);
   const scale = useFitScale();
+  useTurnSounds(game, sound === 'on');
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -150,7 +176,9 @@ export default function App() {
           <SettingsModal
             lang={lang}
             botChoice={botChoice}
+            sound={sound}
             onLangChange={setLang}
+            onSoundChange={setSound}
             onBotChoiceChange={changeBotChoice}
             onClose={closeModal}
           />

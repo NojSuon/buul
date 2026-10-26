@@ -494,6 +494,90 @@ button:focus-visible {
   }
 }
 
+.piece-selected,
+.piece-selected.piece-movable {
+  animation: none;
+  transform: scale(1.12);
+  box-shadow: 0 0 0 3px var(--white), 0 0 0 6px var(--orange);
+}
+
+.piece-threatened {
+  box-shadow: 0 0 0 3px var(--white), 0 0 0 5px #c0392b;
+}
+
+/* Where the selected piece would land. */
+.target-marker {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: min(36px, 72%);
+  aspect-ratio: 1;
+  padding: 0;
+  border: 3px dashed;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  animation: target-blink 1s ease-in-out infinite;
+}
+
+.target-teal {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.target-orange {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.target-capture {
+  color: #c0392b;
+}
+
+.target-marker:hover {
+  background: var(--white);
+  transform: scale(1.1);
+}
+
+@keyframes target-blink {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* The Roll button glows while it is waiting to be clicked. */
+.roll-button-ready {
+  animation: roll-glow 1.3s ease-out infinite;
+}
+
+.roll-button-ready.bg-teal {
+  --glow: rgba(10, 138, 168, 0.65);
+}
+
+.roll-button-ready.bg-orange {
+  --glow: rgba(243, 146, 0, 0.65);
+}
+
+.roll-button-ready:hover {
+  filter: brightness(1.1);
+}
+
+@keyframes roll-glow {
+  0% {
+    box-shadow: 0 0 0 0 var(--glow);
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.08);
+  }
+  100% {
+    box-shadow: 0 0 0 14px rgba(0, 0, 0, 0);
+    transform: scale(1);
+  }
+}
+
 /* ---------- Modal ---------- */
 
 .modal-backdrop {
