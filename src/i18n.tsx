@@ -189,7 +189,10 @@ const en = {
           To play online without an account, Firebase gives your browser a random anonymous ID, with
           no email or name attached. While an online game lasts we store both players’ nicknames,
           that ID or account ID, and the moves of the game. Your opponent sees your nickname.
-          A game is deleted when both players leave it, and automatically two days after it started.
+          A game is deleted when both players leave it. A game left unfinished is deleted once it
+          is two days old, the next time one of its players plays online, and starting a new game
+          deletes your old invitations nobody joined. You can ask us to delete any game at any
+          time.
         </p>
         <h3>What we never do</h3>
         <p>No ads, no analytics, no tracking, and we never sell or share your data.</p>
@@ -502,8 +505,10 @@ const es: Strings = {
           Para jugar en línea sin cuenta, Firebase le da a tu navegador un identificador anónimo
           aleatorio, sin correo ni nombre. Mientras dura una partida en línea guardamos los apodos
           de ambos jugadores, ese identificador o el de tu cuenta, y las jugadas. Tu rival ve tu
-          apodo. La partida se elimina cuando ambos jugadores salen, y automáticamente dos días
-          después de empezar.
+          apodo. La partida se elimina cuando ambos jugadores salen. Una partida sin terminar se
+          elimina cuando tiene dos días, la próxima vez que alguno de sus jugadores juegue en línea,
+          y al crear una partida nueva se eliminan tus invitaciones anteriores sin respuesta.
+          Puedes pedirnos que eliminemos cualquier partida en cualquier momento.
         </p>
         <h3>Lo que nunca hacemos</h3>
         <p>Sin anuncios, sin analíticas, sin rastreo, y nunca vendemos ni compartimos tus datos.</p>

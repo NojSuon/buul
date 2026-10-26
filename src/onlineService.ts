@@ -1,4 +1,17 @@
-import { Timestamp, deleteDoc, doc, getDoc, onSnapshot, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import {
+  Timestamp,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  onSnapshot,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+} from 'firebase/firestore';
 import { db } from './firebase';
 import { newGame, type GameState, type Mode, type Player } from './game';
 
@@ -24,13 +37,32 @@ export interface OnlineGame {
 
 export type JoinResult = { side: Player } | { error: 'not-found' | 'full' };
 
-// Games are deleted automatically two days after they start (a Firestore TTL policy on expireAt).
+// Unfinished games are cleaned up two days after they start (see cleanUpGames).
 const GAME_LIFETIME_MS = 2 * 24 * 60 * 60 * 1000;
 
 const gameDoc = (code: string) => doc(db, 'games', code);
 const randomCode = () => String(Math.floor(Math.random() * 1_000_000)).padStart(6, '0');
 
+// Deletes this player's games that are over two days old, and, when starting a new game, their
+// old invitations nobody joined. Runs on the players' own devices, so it needs no paid server
+// features; a game abandoned by both players is removed the next time either of them is online.
+export async function cleanUpGames(uid: string, keepCode: string | null, dropWaiting: boolean) {
+  const mine = await getDocs(query(collection(db, 'games'), where('uids', 'array-contains', uid)));
+  const now = Date.now();
+  await Promise.all(
+    mine.docs
+      .filter((g) => g.id !== keepCode)
+      .filter((g) => {
+        const data = g.data();
+        const expired = (data.expireAt as Timestamp | undefined)?.toMillis() ?? 0;
+        return expired < now || (dropWaiting && data.status === 'waiting');
+      })
+      .map((g) => deleteDoc(g.ref).catch(() => {})),
+  );
+}
+
 export async function createGame(mode: Mode, player: OnlinePlayer): Promise<string> {
+  await cleanUpGames(player.uid, null, true).catch(() => {});
   // The rules only allow creating a game whose code isn't taken, so a clash fails and we retry.
   for (let attempt = 0; ; attempt++) {
     const code = randomCode();

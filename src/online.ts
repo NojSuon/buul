@@ -56,6 +56,12 @@ export function useOnlineGame(uid: string | null) {
     if (!next) setGame(null);
   };
 
+  // Once per visit, tidy away this player's games that are over two days old.
+  useEffect(() => {
+    if (!uid) return;
+    getService().then((s) => s.cleanUpGames(uid, loadSession()?.code ?? null, false)).catch(() => {});
+  }, [uid]);
+
   useEffect(() => {
     if (!session || !uid) return;
     let unsubscribe = () => {};

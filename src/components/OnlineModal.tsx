@@ -48,7 +48,12 @@ export default function OnlineModal({ intent, online, onClose, onOpenAccount, on
   const [copied, setCopied] = useState(false);
   const [guestName] = useState(() => storedGuestName() ?? suggestNickname());
 
-  const waiting = online.session?.side === 'A' && online.game?.status === 'waiting';
+  // Your open invitation is shown again if you pick its mode; another mode starts a new game.
+  const waiting =
+    intent.kind === 'create' &&
+    online.session?.side === 'A' &&
+    online.game?.status === 'waiting' &&
+    online.game.mode === intent.mode;
   const modeName = intent.kind === 'create' ? MODES.find((m) => m.id === intent.mode)!.name : '';
   const submitLabel = intent.kind === 'create' ? o.create : o.join;
 
