@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="136 136 728 728">
+  <!-- The Mati Mati logo in the game's turquoise, drawn twice: a thick white stroke underneath is the offset. -->
+  <defs>
+    <g id="mati">
+      <path d="M176 176H248L337 262L428 176H500V468H418V328L337 408L258 328V468H176Z" />
+      <path d="M520 176H755Q825 176 825 246V468H745V373H596V468H520ZM596 252V313H745V252Z" fill-rule="evenodd" />
+      <path d="M176 492H500V568H390V825H289V568H176Z" />
+      <path d="M520 492H825V568H720V752H825V825H517V752H618V568H520Z" />
+    </g>
+  </defs>
+  <use href="#mati" fill="#fff" stroke="#fff" stroke-width="64" stroke-linejoin="round" />
+  <use href="#mati" fill="#0a8aa8" />
+</svg>
