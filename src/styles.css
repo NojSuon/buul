@@ -539,6 +539,99 @@ button:focus-visible {
   text-transform: uppercase;
 }
 
+/* ---------- Bots and settings ---------- */
+
+.bot-tag {
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: var(--white);
+  font-family: 'Lilita One', system-ui, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.bot-tag-aggressive {
+  background: #c0392b;
+}
+
+.bot-tag-defensive {
+  background: var(--navy);
+}
+
+.bot-tag-moderate {
+  background: #6b8f71;
+}
+
+.modal-settings {
+  width: 640px;
+}
+
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.settings-section h3 {
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.settings-hint {
+  font-family: system-ui, sans-serif;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.segmented {
+  display: flex;
+  gap: 6px;
+  max-width: 320px;
+}
+
+.bot-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.bot-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 2px solid var(--column-dark);
+  border-radius: var(--radius);
+  background: var(--white);
+  text-align: left;
+  cursor: pointer;
+}
+
+.bot-card:hover {
+  border-color: var(--navy);
+}
+
+.bot-card-active,
+.bot-card-active:hover {
+  border-color: var(--navy);
+  background: var(--paper);
+  box-shadow: inset 4px 0 0 var(--orange);
+}
+
+.bot-card-name {
+  font-size: 17px;
+}
+
+.bot-card-hint {
+  font-family: system-ui, sans-serif;
+  font-size: 12px;
+  line-height: 1.3;
+  opacity: 0.8;
+}
+
 /* ---------- About us ---------- */
 
 .about-logo {

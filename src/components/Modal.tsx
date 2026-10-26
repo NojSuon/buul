@@ -1,6 +1,8 @@
 import { useEffect, type ReactNode } from 'react';
 
-export type ModalKind = 'learn' | 'account' | 'about';
+import { useStrings } from '../i18n';
+
+export type ModalKind = 'learn' | 'settings' | 'account' | 'about';
 
 interface Props {
   title: string;
@@ -10,6 +12,8 @@ interface Props {
 }
 
 export default function Modal({ title, onClose, className, children }: Props) {
+  const t = useStrings();
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     window.addEventListener('keydown', onKey);
@@ -28,7 +32,7 @@ export default function Modal({ title, onClose, className, children }: Props) {
         <h2 id="modal-title">{title}</h2>
         {children}
         <button className="pill-button modal-close" onClick={onClose}>
-          Close
+          {t.close}
         </button>
       </div>
     </div>

@@ -1,31 +1,35 @@
-import type { ReactNode } from 'react';
+import { useStrings } from '../i18n';
 import Modal from './Modal';
 import matiMatiLogo from '../assets/mati-mati-logo.png';
 
-type InfoKind = 'account' | 'about';
+interface Props {
+  kind: 'account' | 'about';
+  onClose: () => void;
+}
 
-const CONTENT: Record<InfoKind, { title: string; body: ReactNode }> = {
-  account: {
-    title: 'Account',
-    body: <p>Accounts are coming soon. You’ll be able to save games and invite friends to play online.</p>,
-  },
-  about: {
-    title: 'About us',
-    body: (
-      <>
+export default function InfoModal({ kind, onClose }: Props) {
+  const t = useStrings();
+
+  if (kind === 'account') {
+    return (
+      <Modal title={t.account.title} onClose={onClose}>
+        <div className="modal-body">
+          <p>{t.account.body}</p>
+        </div>
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal title={t.about.title} onClose={onClose}>
+      <div className="modal-body">
         <img className="about-logo" src={matiMatiLogo} alt="Mati Mati" />
-        <p>
-          Welcome! We are <strong>Mati Mati</strong>, a community dedicated to teaching, researching
-          and gathering resources about minority communities around the world.
-        </p>
-        <p>
-          This digital edition of Buul is part of that work: a way to share a traditional Maya game
-          with anyone who would like to learn it and play.
-        </p>
-        <p>We would be delighted to hear from you. You can write to us or follow our work here:</p>
+        <p>{t.about.intro}</p>
+        <p>{t.about.buul}</p>
+        <p>{t.about.contact}</p>
         <ul className="about-links">
           <li>
-            <span>Email</span>
+            <span>{t.about.email}</span>
             <a href="mailto:matimati.info@gmail.com">matimati.info@gmail.com</a>
           </li>
           <li>
@@ -41,21 +45,7 @@ const CONTENT: Record<InfoKind, { title: string; body: ReactNode }> = {
             </a>
           </li>
         </ul>
-      </>
-    ),
-  },
-};
-
-interface Props {
-  kind: InfoKind;
-  onClose: () => void;
-}
-
-export default function InfoModal({ kind, onClose }: Props) {
-  const { title, body } = CONTENT[kind];
-  return (
-    <Modal title={title} onClose={onClose}>
-      <div className="modal-body">{body}</div>
+      </div>
     </Modal>
   );
 }

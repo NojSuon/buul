@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MODES, type Mode, type Opponent } from '../game';
+import { useStrings } from '../i18n';
 import type { ModalKind } from './Modal';
 
 interface Props {
@@ -9,24 +10,24 @@ interface Props {
   onOpen: (modal: ModalKind) => void;
 }
 
-const SECTIONS: { id: Opponent; label: string }[] = [
-  { id: 'online', label: 'Play online' },
-  { id: 'bot', label: 'Play with bots' },
-];
-
 export default function LeftSidebar({ opponent, mode, onStart, onOpen }: Props) {
+  const t = useStrings();
   const [expanded, setExpanded] = useState<Opponent | null>('bot');
+  const sections: { id: Opponent; label: string }[] = [
+    { id: 'online', label: t.nav.playOnline },
+    { id: 'bot', label: t.nav.playBots },
+  ];
 
   return (
     <aside className="sidebar sidebar-left">
       <header className="brand">
         <h1>Buul</h1>
-        <p>The Mayan board game</p>
+        <p>{t.subtitle}</p>
       </header>
       <hr className="rule" />
 
       <nav className="menu">
-        {SECTIONS.map((section) => {
+        {sections.map((section) => {
           const open = expanded === section.id;
           return (
             <div key={section.id} className="dropdown">
@@ -46,23 +47,26 @@ export default function LeftSidebar({ opponent, mode, onStart, onOpen }: Props) 
                     onClick={() => onStart(section.id, m.id)}
                   >
                     <span className="mode-name">{m.name}</span>
-                    <span className="mode-blurb">{m.blurb}</span>
+                    <span className="mode-blurb">{t.modeBlurbs[m.id]}</span>
                   </button>
                 ))}
             </div>
           );
         })}
         <button className="pill-button" onClick={() => onOpen('learn')}>
-          Learn
+          {t.nav.learn}
         </button>
       </nav>
 
       <div className="menu menu-bottom">
+        <button className="pill-button" onClick={() => onOpen('settings')}>
+          {t.nav.settings}
+        </button>
         <button className="pill-button" onClick={() => onOpen('account')}>
-          Account
+          {t.nav.account}
         </button>
         <button className="pill-button" onClick={() => onOpen('about')}>
-          About us
+          {t.nav.aboutUs}
         </button>
       </div>
     </aside>

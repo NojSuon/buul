@@ -5,17 +5,9 @@ export type Opponent = 'online' | 'bot';
 export const COLUMNS = 'ABCDEFGHIJK'.split('');
 export const ROWS = 5;
 
-export const MODES: { id: Mode; name: string; blurb: string }[] = [
-  {
-    id: 'race',
-    name: "Ixi'im Beel",
-    blurb: 'Maize race: run against your opponent to claim the crown on your troops',
-  },
-  {
-    id: 'capture',
-    name: "Noj Ba'atel",
-    blurb: 'Capture mode: fight against your enemies and capture their armies',
-  },
+export const MODES: { id: Mode; name: string }[] = [
+  { id: 'race', name: "Ixi'im Beel" },
+  { id: 'capture', name: "Noj Ba'atel" },
 ];
 
 export interface Piece {
@@ -65,9 +57,9 @@ export const other = (player: Player): Player => (player === 'A' ? 'B' : 'A');
 
 // Player A marches left to right, player B right to left.
 const direction = (player: Player) => (player === 'A' ? 1 : -1);
-const homeCol = (player: Player) => (player === 'A' ? 0 : COLUMNS.length - 1);
+export const homeCol = (player: Player) => (player === 'A' ? 0 : COLUMNS.length - 1);
 const onBoard = (col: number) => col >= 0 && col < COLUMNS.length;
-const targetCol = (piece: Piece, roll: number) => piece.col + direction(piece.player) * roll;
+export const targetCol = (piece: Piece, roll: number) => piece.col + direction(piece.player) * roll;
 
 // Four two-faced dice: the roll is the number of marked faces, and no marks counts as 5.
 export function throwDice(): boolean[] {
