@@ -539,6 +539,42 @@ button:focus-visible {
   text-transform: uppercase;
 }
 
+/* ---------- About us ---------- */
+
+.about-logo {
+  align-self: center;
+  width: 120px;
+  height: 120px;
+  margin-bottom: 4px;
+}
+
+.about-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 12px 16px;
+  list-style: none;
+  border-radius: var(--radius);
+  background: var(--paper);
+}
+
+.about-links li {
+  display: flex;
+  gap: 12px;
+}
+
+.about-links span {
+  width: 84px;
+  font-family: 'Lilita One', system-ui, sans-serif;
+  text-transform: uppercase;
+}
+
+.about-links a {
+  color: var(--teal);
+  font-weight: 600;
+}
+
 /* ---------- Learn popup ---------- */
 
 .modal-learn {
