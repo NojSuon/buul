@@ -11,7 +11,7 @@ import {
 } from './game';
 import { BOTS, chooseMove, randomBot, type Bot } from './bots';
 import { LanguageProvider, stringsFor, type Lang } from './i18n';
-import LeftSidebar from './components/LeftSidebar';
+import LeftSidebar, { type Theme } from './components/LeftSidebar';
 import MobileBar from './components/MobileBar';
 import DebugInfo from './components/DebugInfo';
 import GameArea, { type BoardNotice, type Seat } from './components/GameArea';
@@ -96,6 +96,8 @@ function useStoredSetting<T extends string>(key: string, fallback: T, allowed: r
   return [value, update] as const;
 }
 
+const systemTheme = (): Theme => (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+
 const pickBot = (choice: BotChoice): Bot => BOTS.find((b) => b.id === choice) ?? randomBot();
 
 // Plays "message sent" when the turn passes to the person at this screen and "message received"
@@ -125,6 +127,9 @@ export default function App() {
   ]);
   const [sound, setSound] = useStoredSetting<SoundSetting>('buul.sound', 'on', ['on', 'off']);
   const [myColor, setMyColor] = useStoredSetting<PieceColor>('buul.color', 'turquoise', PIECE_COLOR_IDS);
+  // Until the player picks, follow the device's own light or dark setting.
+  const [theme, setTheme] = useStoredSetting<Theme>('buul.theme', systemTheme(), ['light', 'dark']);
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
   const [bot, setBot] = useState(() => pickBot(botChoice));
   const [localGame, dispatch] = useReducer(reducer, 'race', newGame);
   const [gameId, setGameId] = useState(makeGameId);
@@ -166,6 +171,11 @@ export default function App() {
   useEffect(() => {
     document.documentElement.lang = lang;
   }, [lang]);
+
+  // index.html sets this before the page draws; this keeps it in step with the button.
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
 
   // An invite link (?join=123456) opens the join popup with the code filled in.
   useEffect(() => {
@@ -260,6 +270,8 @@ export default function App() {
         setMenuOpen(false);
         setModal(kind);
       }}
+      theme={theme}
+      onToggleTheme={toggleTheme}
     />
   );
 
@@ -320,7 +332,7 @@ export default function App() {
       {debug && <DebugInfo mobile={mobile} />}
       {mobile ? (
         <div className="app app-mobile" style={colorVariables(colors)}>
-          <MobileBar onMenu={() => setMenuOpen(true)} />
+          <MobileBar onMenu={() => setMenuOpen(true)} theme={theme} onToggleTheme={toggleTheme} />
           {content}
           {menuOpen && (
             <div className="drawer-backdrop" onClick={() => setMenuOpen(false)}>

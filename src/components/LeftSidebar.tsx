@@ -3,6 +3,8 @@ import { MODES, type Mode, type Opponent } from '../game';
 import { useStrings } from '../i18n';
 import type { ModalKind } from './Modal';
 
+export type Theme = 'light' | 'dark';
+
 interface Props {
   opponent: Opponent;
   mode: Mode;
@@ -10,9 +12,31 @@ interface Props {
   onStart: (opponent: Opponent, mode: Mode) => void;
   onJoin: () => void;
   onOpen: (modal: ModalKind) => void;
+  theme: Theme;
+  onToggleTheme: () => void;
 }
 
-export default function LeftSidebar({ opponent, mode, onStart, onJoin, onOpen }: Props) {
+// Switches between light and dark; the label names the mode it switches to.
+export function ThemeButton({ theme, onToggle, compact }: { theme: Theme; onToggle: () => void; compact?: boolean }) {
+  const t = useStrings();
+  const label = theme === 'dark' ? t.nav.lightMode : t.nav.darkMode;
+  const icon = theme === 'dark' ? '☀' : '☾';
+  if (compact) {
+    return (
+      <button className="menu-button" onClick={onToggle} aria-label={label} title={label}>
+        <span aria-hidden="true">{icon}</span>
+      </button>
+    );
+  }
+  return (
+    <button className="pill-button" onClick={onToggle}>
+      <span aria-hidden="true">{icon}</span>
+      {label}
+    </button>
+  );
+}
+
+export default function LeftSidebar({ opponent, mode, onStart, onJoin, onOpen, theme, onToggleTheme }: Props) {
   const t = useStrings();
   const [expanded, setExpanded] = useState<Opponent | null>('bot');
   const sections: { id: Opponent; label: string }[] = [
@@ -66,6 +90,7 @@ export default function LeftSidebar({ opponent, mode, onStart, onJoin, onOpen }:
       </nav>
 
       <div className="menu menu-bottom">
+        <ThemeButton theme={theme} onToggle={onToggleTheme} />
         <button className="pill-button" onClick={() => onOpen('settings')}>
           {t.nav.settings}
         </button>

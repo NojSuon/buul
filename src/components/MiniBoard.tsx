@@ -55,7 +55,7 @@ export default function MiniBoard({ rows = 3, pieces, moves = [] }: Props) {
       <svg className="mini-arrows" width={BOARD_W + OVERHANG} height={height}>
         <defs>
           <marker id={markerId} viewBox="0 0 6 6" refX="5" refY="3" markerWidth="6" markerHeight="6" orient="auto">
-            <path d="M0,0 L6,3 L0,6 z" fill="var(--navy)" />
+            <path d="M0,0 L6,3 L0,6 z" fill="var(--text)" />
           </marker>
         </defs>
         {moves.map((move, i) => {
@@ -69,7 +69,7 @@ export default function MiniBoard({ rows = 3, pieces, moves = [] }: Props) {
               <path
                 d={`M ${x1} ${y} Q ${(x1 + x2) / 2} ${y - lift} ${x2} ${y}`}
                 fill="none"
-                stroke="var(--navy)"
+                stroke="var(--text)"
                 strokeWidth={2}
                 strokeDasharray={move.style === 'solid' || !move.style ? undefined : '4 3'}
                 markerEnd={move.style === 'blocked' ? undefined : `url(#${markerId})`}

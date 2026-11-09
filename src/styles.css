@@ -11,9 +11,24 @@
   --ink-b: var(--white);
   --column-light: #eef3ee;
   --column-dark: #d9dfd9;
+  /* Theme colours, swapped for dark mode below:
+     surface = the white panels and popups, text = text on them, soft = light fills inside them,
+     line = borders, chrome = the navy sidebars and page, strong = navy outlines and filled tabs. */
+  --surface: var(--white);
+  --text: var(--navy);
+  --soft: var(--paper);
+  --line: #d9dfd9;
+  --chrome: var(--navy);
+  --on-chrome: var(--paper);
+  --strong: var(--navy);
+  --on-strong: var(--paper);
+  --link: var(--teal);
+  --danger: #c0392b;
+  --mini-light: var(--white);
+  color-scheme: light;
   --radius: 12px;
   font-family: 'Lilita One', system-ui, sans-serif;
-  color: var(--navy);
+  color: var(--text);
 }
 
 * {
@@ -28,7 +43,7 @@ body {
 body {
   margin: 0;
   overflow: hidden;
-  background: var(--navy);
+  background: var(--chrome);
 }
 
 button {
@@ -74,7 +89,7 @@ p {
   margin: 0;
   border: 0;
   border-radius: 3px;
-  background: var(--paper);
+  background: var(--on-chrome);
 }
 
 .pill-button {
@@ -87,8 +102,8 @@ p {
   padding: 6px 14px;
   border: 0;
   border-radius: var(--radius);
-  background: var(--paper);
-  color: var(--navy);
+  background: var(--soft);
+  color: var(--text);
   font-size: 17px;
   text-transform: uppercase;
   cursor: pointer;
@@ -124,8 +139,8 @@ button:focus-visible {
   gap: 10px;
   min-height: 0;
   padding: 24px 8px 14px;
-  background: var(--navy);
-  color: var(--paper);
+  background: var(--chrome);
+  color: var(--on-chrome);
 }
 
 .brand {
@@ -194,10 +209,10 @@ button:focus-visible {
   flex-direction: column;
   gap: 4px;
   padding: 8px 10px;
-  border: 1.5px solid var(--paper);
+  border: 1.5px solid var(--on-chrome);
   border-radius: var(--radius);
   background: transparent;
-  color: var(--paper);
+  color: var(--on-chrome);
   text-align: center;
   text-transform: uppercase;
   cursor: pointer;
@@ -238,10 +253,10 @@ button:focus-visible {
   padding: 4px 0;
   overflow-y: auto;
   list-style: none;
-  border: 1.5px solid var(--paper);
+  border: 1.5px solid var(--on-chrome);
   border-radius: var(--radius);
   scrollbar-width: thin;
-  scrollbar-color: var(--paper) transparent;
+  scrollbar-color: var(--on-chrome) transparent;
 }
 
 .history-item {
@@ -267,7 +282,7 @@ button:focus-visible {
   justify-content: center;
   gap: 24px;
   padding: 32px 48px;
-  background: var(--white);
+  background: var(--surface);
 }
 
 .game-row {
@@ -393,7 +408,7 @@ button:focus-visible {
   height: 19px;
   border-radius: 50%;
   border: 4px solid;
-  background: var(--white);
+  background: var(--surface);
 }
 
 .die-a {
@@ -498,7 +513,7 @@ button:focus-visible {
 
 .piece-movable {
   cursor: pointer;
-  box-shadow: 0 0 0 3px var(--white), 0 0 0 5px var(--navy);
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--strong);
   animation: pulse 1.2s ease-in-out infinite;
 }
 
@@ -516,11 +531,11 @@ button:focus-visible {
 .piece-selected.piece-movable {
   animation: none;
   transform: scale(1.12);
-  box-shadow: 0 0 0 3px var(--white), 0 0 0 6px var(--orange);
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 6px var(--orange);
 }
 
 .piece-threatened {
-  box-shadow: 0 0 0 3px var(--white), 0 0 0 5px #c0392b;
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--danger);
 }
 
 /* Where the selected piece would land. */
@@ -533,7 +548,7 @@ button:focus-visible {
   padding: 0;
   border: 3px dashed;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -551,11 +566,11 @@ button:focus-visible {
 }
 
 .target-capture {
-  color: #c0392b;
+  color: var(--danger);
 }
 
 .target-marker:hover {
-  background: var(--white);
+  background: var(--surface);
   transform: scale(1.1);
 }
 
@@ -578,12 +593,13 @@ button:focus-visible {
   display: grid;
   place-items: center;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.78);
+  background: color-mix(in srgb, var(--surface) 78%, transparent);
   backdrop-filter: blur(2px);
 }
 
 .victory-card {
-  --accent: var(--navy);
+  --accent: var(--strong);
+  --on-accent: var(--on-strong);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -592,17 +608,19 @@ button:focus-visible {
   padding: 24px 48px 28px;
   border: 5px solid var(--accent);
   border-radius: 22px;
-  background: var(--white);
+  background: var(--surface);
   box-shadow: 0 18px 50px rgba(46, 63, 88, 0.3);
   animation: victory-pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1);
 }
 
 .victory-a {
   --accent: var(--color-a);
+  --on-accent: var(--ink-a);
 }
 
 .victory-b {
   --accent: var(--color-b);
+  --on-accent: var(--ink-b);
 }
 
 .victory-icon {
@@ -634,13 +652,13 @@ button:focus-visible {
 .victory-actions .pill-button {
   width: auto;
   padding: 8px 22px;
-  border: 2px solid var(--navy);
+  border: 2px solid var(--strong);
 }
 
 .victory-actions .victory-primary {
   border-color: var(--accent);
   background: var(--accent);
-  color: var(--white);
+  color: var(--on-accent);
 }
 
 @keyframes victory-pop {
@@ -742,7 +760,7 @@ button:focus-visible {
   padding: 24px;
   overflow-y: auto;
   border-radius: 16px;
-  background: var(--white);
+  background: var(--surface);
 }
 
 .modal h2 {
@@ -830,21 +848,21 @@ button:focus-visible {
   align-items: flex-start;
   gap: 6px;
   padding: 10px 12px;
-  border: 2px solid var(--column-dark);
+  border: 2px solid var(--line);
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--surface);
   text-align: left;
   cursor: pointer;
 }
 
 .bot-card:hover {
-  border-color: var(--navy);
+  border-color: var(--strong);
 }
 
 .bot-card-active,
 .bot-card-active:hover {
-  border-color: var(--navy);
-  background: var(--paper);
+  border-color: var(--strong);
+  background: var(--soft);
   box-shadow: inset 4px 0 0 var(--orange);
 }
 
@@ -869,7 +887,7 @@ button:focus-visible {
 }
 
 .color-option-active {
-  box-shadow: 0 0 0 3px var(--white), 0 0 0 6px var(--navy);
+  box-shadow: 0 0 0 3px var(--surface), 0 0 0 6px var(--strong);
 }
 
 .app-mobile .color-grid {
@@ -904,7 +922,7 @@ button:focus-visible {
   padding: 12px 16px;
   list-style: none;
   border-radius: var(--radius);
-  background: var(--paper);
+  background: var(--soft);
 }
 
 .about-links li {
@@ -919,7 +937,7 @@ button:focus-visible {
 }
 
 .about-links a {
-  color: var(--teal);
+  color: var(--link);
   font-weight: 600;
 }
 
@@ -945,9 +963,9 @@ button:focus-visible {
   justify-content: center;
   gap: 10px;
   padding: 10px 18px;
-  border: 2px solid var(--column-dark);
+  border: 2px solid var(--line);
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--surface);
   font-family: system-ui, sans-serif;
   font-size: 16px;
   font-weight: 600;
@@ -955,7 +973,7 @@ button:focus-visible {
 }
 
 .google-button:hover {
-  border-color: var(--navy);
+  border-color: var(--strong);
 }
 
 .google-mark {
@@ -986,14 +1004,16 @@ button:focus-visible {
   flex: 1;
   min-width: 0;
   padding: 8px 12px;
-  border: 2px solid var(--column-dark);
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
   border-radius: var(--radius);
   font: inherit;
   font-size: 16px;
 }
 
 .account-row input:focus {
-  border-color: var(--navy);
+  border-color: var(--strong);
   outline: none;
 }
 
@@ -1001,7 +1021,7 @@ button:focus-visible {
   width: auto;
   flex: 1;
   font-size: 14px;
-  border: 2px solid var(--navy);
+  border: 2px solid var(--strong);
 }
 
 .account-save,
@@ -1015,14 +1035,14 @@ button:focus-visible {
 }
 
 .nickname-problem {
-  color: #c0392b;
+  color: var(--danger);
   font-family: system-ui, sans-serif;
   font-size: 13px;
   font-weight: 600;
 }
 
 .account-row input[aria-invalid='true'] {
-  border-color: #c0392b;
+  border-color: var(--danger);
 }
 
 .pill-button:disabled {
@@ -1039,7 +1059,7 @@ button:focus-visible {
 .stats-table th,
 .stats-table td {
   padding: 6px 10px;
-  border-bottom: 1px solid var(--column-dark);
+  border-bottom: 1px solid var(--line);
   text-align: left;
 }
 
@@ -1050,8 +1070,8 @@ button:focus-visible {
 }
 
 .danger-outline {
-  color: #c0392b !important;
-  border-color: #c0392b !important;
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
 }
 
 .danger-button {
@@ -1065,19 +1085,19 @@ button:focus-visible {
   flex-direction: column;
   gap: 10px;
   padding: 12px;
-  border: 2px solid #c0392b;
+  border: 2px solid var(--danger);
   border-radius: var(--radius);
 }
 
 .account-error {
-  color: #c0392b;
+  color: var(--danger);
   font-weight: 600;
 }
 
 .account-error-code {
   display: block;
   margin-top: 2px;
-  color: var(--navy);
+  color: var(--text);
   font-size: 12px;
   font-weight: 400;
   opacity: 0.7;
@@ -1088,7 +1108,7 @@ button:focus-visible {
   padding: 0;
   border: 0;
   background: none;
-  color: var(--teal);
+  color: var(--link);
   font-family: system-ui, sans-serif;
   font-size: 14px;
   font-weight: 600;
@@ -1110,14 +1130,16 @@ button:focus-visible {
   align-self: center;
   padding: 6px 22px;
   border-radius: var(--radius);
-  background: var(--paper);
+  background: var(--soft);
   font-size: 44px;
   letter-spacing: 0.08em;
 }
 
 .online-code-input {
   padding: 8px 12px;
-  border: 2px solid var(--column-dark);
+  border: 2px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
   border-radius: var(--radius);
   font-family: 'Lilita One', system-ui, sans-serif;
   font-size: 26px;
@@ -1126,15 +1148,16 @@ button:focus-visible {
 }
 
 .online-code-input:focus {
-  border-color: var(--navy);
+  border-color: var(--strong);
   outline: none;
 }
 
 .online-link {
   padding: 8px 12px;
-  border: 2px solid var(--column-dark);
+  border: 2px solid var(--line);
+  background: var(--surface);
   border-radius: var(--radius);
-  color: var(--navy);
+  color: var(--text);
   font-family: system-ui, sans-serif;
   font-size: 13px;
 }
@@ -1165,8 +1188,8 @@ button:focus-visible {
 
 .online-leave {
   background: transparent;
-  border: 1.5px solid var(--paper);
-  color: var(--paper);
+  border: 1.5px solid var(--on-chrome);
+  color: var(--on-chrome);
 }
 
 .notice-card {
@@ -1194,22 +1217,22 @@ button:focus-visible {
 .tab {
   flex: 1;
   padding: 6px 8px;
-  border: 2px solid var(--navy);
+  border: 2px solid var(--strong);
   border-radius: var(--radius);
-  background: var(--white);
+  background: var(--surface);
   font-size: 14px;
   text-transform: uppercase;
   cursor: pointer;
 }
 
 .tab:hover {
-  background: var(--paper);
+  background: var(--soft);
 }
 
 .tab-active,
 .tab-active:hover {
-  background: var(--navy);
-  color: var(--paper);
+  background: var(--strong);
+  color: var(--on-strong);
 }
 
 .learn-body {
@@ -1230,7 +1253,7 @@ button:focus-visible {
   margin: 4px 0 8px;
   padding: 12px;
   border-radius: var(--radius);
-  background: var(--paper);
+  background: var(--soft);
 }
 
 .learn-figure figcaption {
@@ -1251,7 +1274,7 @@ button:focus-visible {
 }
 
 .mini-board .column-light {
-  background: var(--white);
+  background: var(--mini-light);
 }
 
 .mini-label {
@@ -1271,7 +1294,7 @@ button:focus-visible {
 }
 
 .mini-blocked {
-  fill: #c0392b;
+  fill: var(--danger);
   font-size: 14px;
   font-weight: 700;
 }
@@ -1301,7 +1324,7 @@ button:focus-visible {
 
 .mini-piece-highlight,
 .mini-piece-crowned {
-  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--navy);
+  box-shadow: 0 0 0 2px var(--soft), 0 0 0 4px var(--strong);
 }
 
 .dice-examples {
@@ -1311,7 +1334,7 @@ button:focus-visible {
   gap: 8px 20px;
   padding: 12px;
   border-radius: var(--radius);
-  background: var(--paper);
+  background: var(--soft);
 }
 
 .dice-example {
@@ -1329,8 +1352,8 @@ button:focus-visible {
 .modal-close {
   align-self: flex-end;
   width: auto;
-  background: var(--navy);
-  color: var(--paper);
+  background: var(--strong);
+  color: var(--on-strong);
 }
 
 .debug-info {
@@ -1349,6 +1372,35 @@ button:focus-visible {
   word-break: break-word;
 }
 
+/* ---------- Dark mode ---------- */
+
+:root[data-theme='dark'] {
+  --surface: #1b2430;
+  --text: #e6ebf0;
+  --soft: #283342;
+  --line: #3a4757;
+  --chrome: #10161f;
+  --on-chrome: #e6ebf0;
+  --strong: #e6ebf0;
+  --on-strong: #1b2430;
+  --link: #4cc3e0;
+  --danger: #ef6b5d;
+  --mini-light: #3a4757;
+  --column-light: #283444;
+  --column-dark: #212b39;
+  color-scheme: dark;
+}
+
+/* A faint edge so dark piece colours (obsidian, cacao) stand out on the dark board. Zero
+   specificity, so the movable/selected rings still win. */
+:where(:root[data-theme='dark']) :where(.piece, .swatch, .color-option, .crowned-bar, .roll-button) {
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, 0.28);
+}
+
+:where(:root[data-theme='dark']) :where(.die) {
+  box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.28);
+}
+
 /* ---------- Phone layout ---------- */
 
 /* A vertical page that scrolls: top bar, opponent, board, you, then the move list. */
@@ -1358,7 +1410,7 @@ button:focus-visible {
   flex-direction: column;
   height: 100%;
   overflow-y: auto;
-  background: var(--white);
+  background: var(--surface);
   transform: none;
 }
 
@@ -1370,8 +1422,8 @@ button:focus-visible {
   align-items: center;
   justify-content: space-between;
   padding: 10px 16px;
-  background: var(--navy);
-  color: var(--paper);
+  background: var(--chrome);
+  color: var(--on-chrome);
 }
 
 .mobile-brand {
@@ -1389,6 +1441,11 @@ button:focus-visible {
 .mobile-subtitle {
   font-size: 12px;
   text-transform: uppercase;
+}
+
+.mobile-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .menu-button {
@@ -1567,11 +1624,11 @@ button:focus-visible {
 
 .app-mobile .piece-movable,
 .app-mobile .piece-selected {
-  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--navy);
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--strong);
 }
 
 .app-mobile .piece-selected {
-  box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--orange);
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--orange);
 }
 
 .app-mobile .victory-overlay {
