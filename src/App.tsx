@@ -96,8 +96,6 @@ function useStoredSetting<T extends string>(key: string, fallback: T, allowed: r
   return [value, update] as const;
 }
 
-const systemTheme = (): Theme => (window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-
 const pickBot = (choice: BotChoice): Bot => BOTS.find((b) => b.id === choice) ?? randomBot();
 
 // Plays "message sent" when the turn passes to the person at this screen and "message received"
@@ -127,8 +125,8 @@ export default function App() {
   ]);
   const [sound, setSound] = useStoredSetting<SoundSetting>('buul.sound', 'on', ['on', 'off']);
   const [myColor, setMyColor] = useStoredSetting<PieceColor>('buul.color', 'turquoise', PIECE_COLOR_IDS);
-  // Until the player picks, follow the device's own light or dark setting.
-  const [theme, setTheme] = useStoredSetting<Theme>('buul.theme', systemTheme(), ['light', 'dark']);
+  // Light until the player picks dark.
+  const [theme, setTheme] = useStoredSetting<Theme>('buul.theme', 'light', ['light', 'dark']);
   const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
   const [bot, setBot] = useState(() => pickBot(botChoice));
   const [localGame, dispatch] = useReducer(reducer, 'race', newGame);

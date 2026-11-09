@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Buul – The Mayan Board Game</title>
     <script>
-      // Picks light or dark before the page draws, so it doesn't flash white (App.tsx takes over).
+      // Applies a saved dark mode before the page draws, so it doesn't flash white (App.tsx takes
+      // over). Light is the default.
       try {
-        var theme = localStorage.getItem('buul.theme');
-        if (theme !== 'light' && theme !== 'dark') {
-          theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        document.documentElement.dataset.theme = theme;
+        document.documentElement.dataset.theme = localStorage.getItem('buul.theme') === 'dark' ? 'dark' : 'light';
       } catch (e) {}
     </script>
     <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
